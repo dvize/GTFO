@@ -14,8 +14,8 @@ public class GTFOComponent : MonoBehaviour
     private Player player;
     private bool displayActive;
     private GUIStyle style;
-    private Vector3[] extractPositions; 
-    private string[] extractNames; 
+    private Vector3[] extractPositions;
+    private string[] extractNames;
     private float[] extractDistances;
     private Vector3 screenPosition;
 
@@ -101,7 +101,7 @@ public class GTFOComponent : MonoBehaviour
 
     private void UpdateLabels()
     {
-        for (int i = 0; i < enabledExfiltrationPoints.Count; i++) 
+        for (int i = 0; i < enabledExfiltrationPoints.Count; i++)
         {
             extractPositions[i] = enabledExfiltrationPoints[i].transform.position;
             extractNames[i] = enabledExfiltrationPoints[i].name;
