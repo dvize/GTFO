@@ -101,7 +101,7 @@ public class GTFOComponent : MonoBehaviour
 
     private void UpdateLabels()
     {
-        for (int i = 0; i < enabledExfiltrationPoints.Count; i++) // Loop over enabledExfiltrationPoints directly
+        for (int i = 0; i < enabledExfiltrationPoints.Count; i++) 
         {
             extractPositions[i] = enabledExfiltrationPoints[i].transform.position;
             extractNames[i] = enabledExfiltrationPoints[i].name;
@@ -120,19 +120,26 @@ public class GTFOComponent : MonoBehaviour
 
     private void DrawLabels()
     {
-        if(style is null)
+        if (style is null)
         {
             style = new GUIStyle();
             style.normal.textColor = Color.white;
             style.alignment = TextAnchor.MiddleCenter;
+            style.fontSize = 18;
         }
-        
+
         for (int i = 0; i < extractPositions.Length; i++)
         {
             screenPosition = Camera.main.WorldToScreenPoint(extractPositions[i]);
 
-            string label = $"Extract Name: {extractNames[i]}\nDistance: {extractDistances[i]:F2} meters";
-            GUI.Label(new Rect(screenPosition.x, Screen.height - screenPosition.y, 200, 50), label, style); 
+            // Check if the label position is within the screen bounds
+            if (screenPosition.x >= 0 && screenPosition.x <= Screen.width &&
+                screenPosition.y >= 0 && screenPosition.y <= Screen.height &&
+                screenPosition.z > 0) // Ensure the object is in front of the camera
+            {
+                string label = $"Extract Name: {extractNames[i]}\nDistance: {extractDistances[i]:F2} meters";
+                GUI.Label(new Rect(screenPosition.x, Screen.height - screenPosition.y, 200, 50), label, style);
+            }
         }
     }
 
