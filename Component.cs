@@ -104,7 +104,8 @@ public class GTFOComponent : MonoBehaviour
         for (int i = 0; i < enabledExfiltrationPoints.Count; i++)
         {
             extractPositions[i] = enabledExfiltrationPoints[i].transform.position;
-            extractNames[i] = enabledExfiltrationPoints[i].name;
+
+            extractNames[i] = enabledExfiltrationPoints[i].Settings.Name.Localized();
             extractDistances[i] = Vector3.Distance(extractPositions[i], player.Position);
         }
     }
@@ -130,6 +131,12 @@ public class GTFOComponent : MonoBehaviour
 
         for (int i = 0; i < extractPositions.Length; i++)
         {
+            //check if distance is less than plugin value
+            if (extractDistances[i] > GTFOPlugin.distanceLimit.Value)
+            {
+                continue;
+            }
+
             screenPosition = Camera.main.WorldToScreenPoint(extractPositions[i]);
 
             // Check if the label position is within the screen bounds
