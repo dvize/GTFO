@@ -11,6 +11,7 @@ public class GTFOComponent : MonoBehaviour
 {
     private static GameWorld gameWorld;
     private List<ExfiltrationPoint> enabledExfiltrationPoints = new List<ExfiltrationPoint>();
+    private List<ScavExfiltrationPoint> enabledScavExfiltrationPoints = new List<ScavExfiltrationPoint>();
     private Player player;
     private bool displayActive;
     private GUIStyle style;
@@ -23,10 +24,6 @@ public class GTFOComponent : MonoBehaviour
     {
         get; private set;
     }
-
-    private Dictionary<string, Vector3> labelsAndPositions = new Dictionary<string, Vector3>();
-
-
     public GTFOComponent()
     {
         if (Logger == null)
@@ -39,25 +36,50 @@ public class GTFOComponent : MonoBehaviour
     {
         player = gameWorld.MainPlayer;
         enabledExfiltrationPoints.Clear();
+        enabledScavExfiltrationPoints.Clear();
 
         SetupInitialExtracts();
-
-        extractDistances = new float[enabledExfiltrationPoints.Count];
-        extractPositions = new Vector3[enabledExfiltrationPoints.Count];
-        extractNames = new string[enabledExfiltrationPoints.Count];
     }
 
     private void SetupInitialExtracts()
     {
-        foreach (ExfiltrationPoint exfiltrationPoint in gameWorld.ExfiltrationController.ExfiltrationPoints)
+        //check if we are in a scav run
+        if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
         {
-            if (exfiltrationPoint.isActiveAndEnabled)
+            foreach (ScavExfiltrationPoint scavExfiltrationPoint in gameWorld.ExfiltrationController.ScavExfiltrationPoints)
             {
-                enabledExfiltrationPoints.Add(exfiltrationPoint);
+                //check if enabled and if assigned to our player scav
+                if (scavExfiltrationPoint.isActiveAndEnabled && scavExfiltrationPoint.InfiltrationMatch(player))
+                {
+                    enabledScavExfiltrationPoints.Add(scavExfiltrationPoint);
+                }
             }
-        }
 
-        Logger.LogWarning("Enabled Exfiltration Points: " + enabledExfiltrationPoints.Count);
+            Logger.LogWarning("Enabled Scav Exfiltration Points: " + enabledScavExfiltrationPoints.Count);
+
+            extractDistances = new float[enabledScavExfiltrationPoints.Count];
+            extractPositions = new Vector3[enabledScavExfiltrationPoints.Count];
+            extractNames = new string[enabledScavExfiltrationPoints.Count];
+
+            return;
+        }
+        else 
+        {
+            foreach (ExfiltrationPoint exfiltrationPoint in gameWorld.ExfiltrationController.ExfiltrationPoints)
+            {
+                //check if enabled and if assigned to our player
+                if (exfiltrationPoint.isActiveAndEnabled && exfiltrationPoint.InfiltrationMatch(player))
+                {
+                    enabledExfiltrationPoints.Add(exfiltrationPoint);
+                }
+            }
+
+            Logger.LogWarning("Enabled Exfiltration Points: " + enabledExfiltrationPoints.Count);
+
+            extractDistances = new float[enabledExfiltrationPoints.Count];
+            extractPositions = new Vector3[enabledExfiltrationPoints.Count];
+            extractNames = new string[enabledExfiltrationPoints.Count];
+        }
     }
 
     private void Update()
@@ -101,13 +123,28 @@ public class GTFOComponent : MonoBehaviour
 
     private void UpdateLabels()
     {
-        for (int i = 0; i < enabledExfiltrationPoints.Count; i++)
+        if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
         {
-            extractPositions[i] = enabledExfiltrationPoints[i].transform.position;
+            for (int i = 0; i < enabledScavExfiltrationPoints.Count; i++)
+            {
+                extractPositions[i] = enabledScavExfiltrationPoints[i].transform.position;
 
-            extractNames[i] = enabledExfiltrationPoints[i].Settings.Name.Localized();
-            extractDistances[i] = Vector3.Distance(extractPositions[i], player.Position);
+                extractNames[i] = enabledScavExfiltrationPoints[i].Settings.Name.Localized();
+                extractDistances[i] = Vector3.Distance(extractPositions[i], player.Position);
+            }
+            return;
         }
+        else
+        {
+            for (int i = 0; i < enabledExfiltrationPoints.Count; i++)
+            {
+                extractPositions[i] = enabledExfiltrationPoints[i].transform.position;
+
+                extractNames[i] = enabledExfiltrationPoints[i].Settings.Name.Localized();
+                extractDistances[i] = Vector3.Distance(extractPositions[i], player.Position);
+            }
+        }
+
     }
 
 
