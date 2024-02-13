@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
@@ -43,43 +44,51 @@ public class GTFOComponent : MonoBehaviour
 
     private void SetupInitialExtracts()
     {
-        //check if we are in a scav run
         if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
         {
-            foreach (ScavExfiltrationPoint scavExfiltrationPoint in gameWorld.ExfiltrationController.ScavExfiltrationPoints)
-            {
-                //check if enabled and if assigned to our player scav
-                if (scavExfiltrationPoint.isActiveAndEnabled && scavExfiltrationPoint.InfiltrationMatch(player))
-                {
-                    enabledScavExfiltrationPoints.Add(scavExfiltrationPoint);
-                }
-            }
-
-            Logger.LogWarning("Enabled Scav Exfiltration Points: " + enabledScavExfiltrationPoints.Count);
-
-            extractDistances = new float[enabledScavExfiltrationPoints.Count];
-            extractPositions = new Vector3[enabledScavExfiltrationPoints.Count];
-            extractNames = new string[enabledScavExfiltrationPoints.Count];
-
-            return;
+            SetupExtracts(gameWorld.ExfiltrationController.ScavExfiltrationPoints);
         }
-        else 
+        else
         {
-            foreach (ExfiltrationPoint exfiltrationPoint in gameWorld.ExfiltrationController.ExfiltrationPoints)
+            SetupExtracts(gameWorld.ExfiltrationController.ExfiltrationPoints);
+        }
+    }
+
+    private void SetupExtracts(IEnumerable<ExfiltrationPoint> points)
+    {
+        foreach (ExfiltrationPoint point in points)
+        {
+            // Check if enabled and assigned to the player
+            if (point.isActiveAndEnabled && point.InfiltrationMatch(player))
             {
-                //check if enabled and if assigned to our player
-                if (exfiltrationPoint.isActiveAndEnabled && exfiltrationPoint.InfiltrationMatch(player))
+                if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
                 {
-                    enabledExfiltrationPoints.Add(exfiltrationPoint);
+                    enabledScavExfiltrationPoints.Add(point as ScavExfiltrationPoint);
+                }
+                else
+                {
+                    enabledExfiltrationPoints.Add(point);
                 }
             }
-
-            Logger.LogWarning("Enabled Exfiltration Points: " + enabledExfiltrationPoints.Count);
-
-            extractDistances = new float[enabledExfiltrationPoints.Count];
-            extractPositions = new Vector3[enabledExfiltrationPoints.Count];
-            extractNames = new string[enabledExfiltrationPoints.Count];
         }
+
+        if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+        {
+            Logger.LogWarning("Enabled Scav Exfiltration Points: " + enabledScavExfiltrationPoints.Count);
+            SetupExtractArrays(enabledScavExfiltrationPoints);
+        }
+        else
+        {
+            Logger.LogWarning("Enabled Exfiltration Points: " + enabledExfiltrationPoints.Count);
+            SetupExtractArrays(enabledExfiltrationPoints);
+        }
+    }
+
+    private void SetupExtractArrays(IEnumerable<ExfiltrationPoint> enabledPoints)
+    {
+        extractDistances = new float[enabledPoints.Count()];
+        extractPositions = new Vector3[enabledPoints.Count()];
+        extractNames = new string[enabledPoints.Count()];
     }
 
     private void Update()
