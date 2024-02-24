@@ -1,111 +1,46 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
-using EFT.Interactive;
 using GTFO;
 using UnityEngine;
 
 public class GTFOComponent : MonoBehaviour
 {
-    private static GameWorld gameWorld;
-    private List<ExfiltrationPoint> enabledExfiltrationPoints = new List<ExfiltrationPoint>();
-    private List<ScavExfiltrationPoint> enabledScavExfiltrationPoints = new List<ScavExfiltrationPoint>();
-    private Player player;
-    private bool displayActive;
-    private GUIStyle style;
-    private Vector3[] extractPositions;
-    private string[] extractNames;
-    private float[] extractDistances;
-    private Vector3 screenPosition;
+    internal static ManualLogSource Logger;
+    internal static GameWorld gameWorld;
+    internal static Player player;
+    internal static bool displayActive;
 
-    protected static ManualLogSource Logger
-    {
-        get; private set;
-    }
-    public GTFOComponent()
+    private void Awake()
     {
         if (Logger == null)
-        {
             Logger = BepInEx.Logging.Logger.CreateLogSource(nameof(GTFOComponent));
-        }
     }
 
     private void Start()
     {
         player = gameWorld.MainPlayer;
-        enabledExfiltrationPoints.Clear();
-        enabledScavExfiltrationPoints.Clear();
 
-        SetupInitialExtracts();
-    }
+        displayActive = false;
 
-    private void SetupInitialExtracts()
-    {
-        if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
-        {
-            SetupExtracts(gameWorld.ExfiltrationController.ScavExfiltrationPoints);
-        }
-        else
-        {
-            SetupExtracts(gameWorld.ExfiltrationController.ExfiltrationPoints);
-        }
-    }
-
-    private void SetupExtracts(IEnumerable<ExfiltrationPoint> points)
-    {
-        foreach (ExfiltrationPoint point in points)
-        {
-            // Check if enabled and assigned to the player
-            if (point.isActiveAndEnabled && point.InfiltrationMatch(player))
-            {
-                if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
-                {
-                    enabledScavExfiltrationPoints.Add(point as ScavExfiltrationPoint);
-                }
-                else
-                {
-                    enabledExfiltrationPoints.Add(point);
-                }
-            }
-        }
-
-        if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
-        {
-            Logger.LogWarning("Enabled Scav Exfiltration Points: " + enabledScavExfiltrationPoints.Count);
-            SetupExtractArrays(enabledScavExfiltrationPoints);
-        }
-        else
-        {
-            Logger.LogWarning("Enabled Exfiltration Points: " + enabledExfiltrationPoints.Count);
-            SetupExtractArrays(enabledExfiltrationPoints);
-        }
-    }
-
-    private void SetupExtractArrays(IEnumerable<ExfiltrationPoint> enabledPoints)
-    {
-        extractDistances = new float[enabledPoints.Count()];
-        extractPositions = new Vector3[enabledPoints.Count()];
-        extractNames = new string[enabledPoints.Count()];
+        ExtractManager.Initialize();
     }
 
     private void Update()
     {
-        if (GTFOPlugin.enabledPlugin.Value == false)
-        {
+        if (!GTFOPlugin.enabledPlugin.Value)
             return;
-        }
 
-        if (GTFOPlugin.keyboardShortcut.Value.IsDown() && !displayActive)
+        if (IsKeyPressed(GTFOPlugin.keyboardShortcut.Value) && !displayActive)
         {
             ToggleExtractionPointsDisplay(true);
         }
 
-        UpdateLabels();
+        GUIHelper.UpdateLabels();
     }
-
     private void ToggleExtractionPointsDisplay(bool display)
     {
         displayActive = display;
@@ -130,69 +65,12 @@ public class GTFOComponent : MonoBehaviour
         displayActive = false;
     }
 
-    private void UpdateLabels()
-    {
-        if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
-        {
-            for (int i = 0; i < enabledScavExfiltrationPoints.Count; i++)
-            {
-                extractPositions[i] = enabledScavExfiltrationPoints[i].transform.position;
-
-                extractNames[i] = enabledScavExfiltrationPoints[i].Settings.Name.Localized();
-                extractDistances[i] = Vector3.Distance(extractPositions[i], player.Position);
-            }
-            return;
-        }
-        else
-        {
-            for (int i = 0; i < enabledExfiltrationPoints.Count; i++)
-            {
-                extractPositions[i] = enabledExfiltrationPoints[i].transform.position;
-
-                extractNames[i] = enabledExfiltrationPoints[i].Settings.Name.Localized();
-                extractDistances[i] = Vector3.Distance(extractPositions[i], player.Position);
-            }
-        }
-
-    }
-
 
     private void OnGUI()
     {
         if (displayActive)
         {
-            DrawLabels();
-        }
-    }
-
-    private void DrawLabels()
-    {
-        if (style is null)
-        {
-            style = new GUIStyle();
-            style.normal.textColor = Color.white;
-            style.alignment = TextAnchor.MiddleCenter;
-            style.fontSize = 18;
-        }
-
-        for (int i = 0; i < extractPositions.Length; i++)
-        {
-            //check if distance is less than plugin value
-            if (extractDistances[i] > GTFOPlugin.distanceLimit.Value)
-            {
-                continue;
-            }
-
-            screenPosition = Camera.main.WorldToScreenPoint(extractPositions[i]);
-
-            // Check if the label position is within the screen bounds
-            if (screenPosition.x >= 0 && screenPosition.x <= Screen.width &&
-                screenPosition.y >= 0 && screenPosition.y <= Screen.height &&
-                screenPosition.z > 0) // Ensure the object is in front of the camera
-            {
-                string label = $"Extract Name: {extractNames[i]}\nDistance: {extractDistances[i]:F2} meters";
-                GUI.Label(new Rect(screenPosition.x, Screen.height - screenPosition.y, 200, 50), label, style);
-            }
+            GUIHelper.DrawLabels(displayActive, ExtractManager.extractPositions, ExtractManager.extractDistances, ExtractManager.extractNames, player);
         }
     }
 
@@ -200,10 +78,27 @@ public class GTFOComponent : MonoBehaviour
     {
         if (Singleton<IBotGame>.Instantiated)
         {
+            //add component to gameWorld
             gameWorld = Singleton<GameWorld>.Instance;
-            gameWorld.GetOrAddComponent<GTFOComponent>();
-
+            gameWorld.gameObject.AddComponent<GTFOComponent>();
             Logger.LogDebug("GTFO Enabled");
+
         }
+    }
+
+    bool IsKeyPressed(KeyboardShortcut key)
+    {
+        if (!UnityInput.Current.GetKeyDown(key.MainKey))
+        {
+            return false;
+        }
+        foreach (var modifier in key.Modifiers)
+        {
+            if (!UnityInput.Current.GetKey(modifier))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
