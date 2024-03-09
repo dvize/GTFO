@@ -54,7 +54,7 @@ namespace GTFO
                     var availableForFinishConditionsList = template.Conditions[EQuestStatus.AvailableForFinish];
 
 #if DEBUG
-                    GTFOComponent.Logger.LogInfo($"NameKey: {nameKey}");
+                    GTFOComponent.Logger.LogInfo($"NameKey: {nameKey.Localized()}");
 #endif
 
                     foreach (Condition condition in availableForFinishConditionsList)
@@ -62,7 +62,7 @@ namespace GTFO
                         // Already have Conditions available for finish, so we can just use them
 
 #if DEBUG
-                        GTFOComponent.Logger.LogInfo($"Condition: {condition.id}");
+                        GTFOComponent.Logger.LogInfo($"Condition: {condition.id}, Type: {condition.GetType()}, Identity: Type: {condition.GetIdentity()}");
 #endif
 
                         switch (condition)
@@ -163,56 +163,24 @@ namespace GTFO
 #endif
                                     break;
                                 }
-                            case ConditionVisitPlace place:
-                                {
-                                    string zoneId = place.target;
-
-                                    IEnumerable<ExperienceTrigger> zoneTriggers =
-                                        allTriggers.GetZoneTriggers<ExperienceTrigger>(zoneId);
-
-#if DEBUG
-                                    GTFOComponent.Logger.LogInfo("ConditionVisitPlace Case Started");
-#endif
-
-                                    if (zoneTriggers != null)
-                                    {
-                                        foreach (ExperienceTrigger trigger in zoneTriggers)
-                                        {
-                                            var staticInfo = new QuestData
-                                            {
-                                                Id = place.id,
-                                                Location = ToQuestLocation(trigger.transform.position),
-                                                ZoneId = zoneId,
-                                                NameText = nameKey.Localized(),
-                                                Description = place.FormattedDescription.Localized(),
-                                                Trader = TraderIdToName(traderId),
-                                            };
-
-                                            questMarkerData.Add(staticInfo);
-                                        }
-                                    }
-
-#if DEBUG
-                                    GTFOComponent.Logger.LogInfo("ConditionVisitPlace Case Finished");
-#endif
-                                    break;
-                                }
+                            
                             case ConditionCounterCreator counterCreator:
                                 {
 #if DEBUG
                                     GTFOComponent.Logger.LogInfo("Started Case ConditionCounterCreator");
 #endif
 
-                                    var counter = Traverse.Create(counterCreator).Field("counter").GetValue<ConditionCounterCreator>();
+                                    var countertemplate = Traverse.Create(counterCreator).Field("_templateConditions").GetValue<ConditionCounterCreator.ConditionCounterTemplate>();
 
 #if DEBUG
-                                    GTFOComponent.Logger.LogInfo("Instantiated counter");
+                                    GTFOComponent.Logger.LogInfo("Instantiated countertemplate");
 #endif
 
-                                    var conditions = Traverse.Create(counter).Property("Conditions").GetValue<GClass3373>();
+                                    var conditions = Traverse.Create(countertemplate).Field("Conditions").GetValue<GClass3373>();
 
 #if DEBUG
-                                    GTFOComponent.Logger.LogInfo("Instantiated conditions");
+                                    GTFOComponent.Logger.LogInfo("Instantiated conditions, count of : " + conditions.Count());
+                                    
 #endif
                                     var conditionsList = Traverse.Create(conditions).Field("list_0").GetValue<IList>();
 
@@ -230,6 +198,7 @@ namespace GTFO
                                     {
 #if DEBUG
                                         GTFOComponent.Logger.LogInfo("In foreach Loop of ConditionCounterCreator");
+                                        GTFOComponent.Logger.LogInfo("condition2 type: " + condition2.GetType());
 #endif
 
                                         switch (condition2)
@@ -251,7 +220,7 @@ namespace GTFO
                                                         {
                                                             var staticInfo = new QuestData
                                                             {
-                                                                Id = counterCreator.id,
+                                                                Id = place.id,
                                                                 Location = ToQuestLocation(trigger.transform.position),
                                                                 ZoneId = zoneId,
                                                                 NameText = nameKey.Localized(),
@@ -301,7 +270,44 @@ namespace GTFO
                                                     }
 
 #if DEBUG
-                                                    GTFOComponent.Logger.LogInfo("ConditionVisitPlace Case Finished");
+                                                    GTFOComponent.Logger.LogInfo("ConditionInZone Case Finished");
+#endif
+                                                    break;
+                                                }
+                                            case ConditionLocation location:
+                                                {
+                                                    string[] zoneIds = location.target;
+
+#if DEBUG
+                                                    GTFOComponent.Logger.LogInfo("ConditionInLocation Case Started");
+#endif
+
+                                                    foreach (string zoneId in zoneIds)
+                                                    {
+                                                        IEnumerable<ExperienceTrigger> zoneTriggers =
+                                                            allTriggers.GetZoneTriggers<ExperienceTrigger>(zoneId);
+
+                                                        if (zoneTriggers != null)
+                                                        {
+                                                            foreach (ExperienceTrigger trigger in zoneTriggers)
+                                                            {
+                                                                var staticInfo = new QuestData
+                                                                {
+                                                                    Id = counterCreator.id,
+                                                                    Location = ToQuestLocation(trigger.transform.position),
+                                                                    ZoneId = zoneId,
+                                                                    NameText = nameKey.Localized(),
+                                                                    Description = counterCreator.id.Localized(),
+                                                                    Trader = TraderIdToName(traderId),
+                                                                };
+
+                                                                questMarkerData.Add(staticInfo);
+                                                            }
+                                                        }
+                                                    }
+
+#if DEBUG
+                                                    GTFOComponent.Logger.LogInfo("ConditionInLocation Case Finished");
 #endif
                                                     break;
                                                 }
@@ -312,6 +318,7 @@ namespace GTFO
 #endif
                                     break;
                                 }
+
                         }
                     }
                 }

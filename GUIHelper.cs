@@ -17,14 +17,16 @@ namespace GTFO
                 return;
 
             if (style == null)
-                {
-                    style = new GUIStyle();
-                    style.normal.textColor = Color.white;
-                    style.alignment = TextAnchor.MiddleCenter;
-                    style.fontSize = 18;
-                }
+            {
+                style = new GUIStyle();
+                style.normal.textColor = Color.green;
+                style.fontStyle = FontStyle.Bold;
+                style.alignment = TextAnchor.MiddleCenter;
+                style.normal.background = Texture2D.blackTexture;
+                style.fontSize = 16;
+            }
 
-                for (int i = 0; i < extractPositions.Length; i++)
+            for (int i = 0; i < extractPositions.Length; i++)
                 {
                     if (extractDistances[i] > GTFOPlugin.distanceLimit.Value)
                     {
@@ -52,10 +54,11 @@ namespace GTFO
             if (style2 == null)
             {
                 style2 = new GUIStyle();
-                style2.normal.textColor = Color.white;
-                style2.normal.background = Texture2D.redTexture;
+                style2.normal.textColor = Color.red;
+                style2.normal.background = Texture2D.blackTexture;
+                style2.fontStyle = FontStyle.Bold;
                 style2.alignment = TextAnchor.MiddleCenter;
-                style2.fontSize = 18;
+                style2.fontSize = 14;
             }
 
             foreach (QuestData quest in GTFOComponent.questManager.questDataService.QuestMarkers)
@@ -67,7 +70,7 @@ namespace GTFO
                     screenPosition.z > 0)
                 {
                     string label = $"Quest Name: {quest.NameText}\nDescription: {quest.Description}\nDistance: {Vector3.Distance(new Vector3((float)quest.Location.X, (float)quest.Location.Y, (float)quest.Location.Z), GTFOComponent.player.Position)}";
-                    GUI.Label(new Rect(screenPosition.x, Screen.height - screenPosition.y, 200, 100), label, style);
+                    GUI.Label(new Rect(screenPosition.x, Screen.height - screenPosition.y, 200, 100), label, style2);
                 }
             }
 
