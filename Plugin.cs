@@ -7,12 +7,13 @@ using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.3")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.4")]
     public class GTFOPlugin : BaseUnityPlugin
     {
         public static ConfigEntry<bool> enabledPlugin;
         public static ConfigEntry<float> distanceLimit;
-        public static ConfigEntry<KeyboardShortcut> keyboardShortcut;
+        public static ConfigEntry<KeyboardShortcut> extractKeyboardShortcut;
+        public static ConfigEntry<KeyboardShortcut> questKeyboardShortcut;
         public static ConfigEntry<float> displayTime;
 
         private void Awake()
@@ -22,25 +23,31 @@ namespace GTFO
                 "Main Settings",
                 "Enable",
                 true,
-                "Enable the plugin to show with extracts dialog");
+                "Enable the plugin to show with extracts/quests objectives");
 
             distanceLimit = Config.Bind(
                 "Main Settings",
                 "Distance Limit",
-                300f,
+                500f,
                 "Show Extracts at a Maximum Distance of Up To");
 
-            keyboardShortcut = Config.Bind(
+            extractKeyboardShortcut = Config.Bind(
                 "Main Settings",
-                "Keyboard Shortcut",
+                "Extract Keyboard Shortcut",
                 new KeyboardShortcut(KeyCode.O),
-                "Toggle Extracts Dialog");
+                "Toggle Extracts Display");
+
+            questKeyboardShortcut = Config.Bind(
+                "Main Settings",
+                "Quest Keyboard Shortcut",
+                new KeyboardShortcut(KeyCode.P),
+                "Toggle Quest Display");
 
             displayTime = Config.Bind(
                 "Main Settings",
                 "Display Time",
-                5f,
-                "Time to Display Extracts Dialog");
+                10f,
+                "Amount of Time to Display Objective Points");
 
             new NewGamePatch().Enable();
         }

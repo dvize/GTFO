@@ -121,6 +121,12 @@
     <Compile Include="GUIHelper.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Quest\QuestData.cs" />
+    <Compile Include="Quest\QuestDataService.cs" />
+    <Compile Include="Quest\QuestLocation.cs" />
+    <Compile Include="Quest\QuestManager.cs" />
+    <Compile Include="Quest\TryNotifyConditionChangedPatch.cs" />
+    <Compile Include="Quest\ZoneDataHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

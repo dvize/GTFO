@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using EFT.Interactive;
 using GTFO;
 using UnityEngine;
 
@@ -12,7 +14,9 @@ public class GTFOComponent : MonoBehaviour
     internal static ManualLogSource Logger;
     internal static GameWorld gameWorld;
     internal static Player player;
-    internal static bool displayActive;
+    internal static bool extractDisplayActive;
+    internal static bool questDisplayActive;
+    internal static QuestManager questManager;
 
     private void Awake()
     {
@@ -23,10 +27,12 @@ public class GTFOComponent : MonoBehaviour
     private void Start()
     {
         player = gameWorld.MainPlayer;
-
-        displayActive = false;
+        questManager = new QuestManager();
+        extractDisplayActive = false;
+        questDisplayActive = false;
 
         ExtractManager.Initialize();
+        questManager.Initialize();
     }
 
     private void Update()
@@ -34,27 +40,49 @@ public class GTFOComponent : MonoBehaviour
         if (!GTFOPlugin.enabledPlugin.Value)
             return;
 
-        if (IsKeyPressed(GTFOPlugin.keyboardShortcut.Value) && !displayActive)
+        if (IsKeyPressed(GTFOPlugin.extractKeyboardShortcut.Value) && !extractDisplayActive)
         {
             ToggleExtractionPointsDisplay(true);
         }
 
+        if (IsKeyPressed(GTFOPlugin.questKeyboardShortcut.Value) && !questDisplayActive)
+        {
+            ToggleQuestPointsDisplay(true);
+        }
+
         GUIHelper.UpdateLabels();
     }
-    private void ToggleExtractionPointsDisplay(bool display)
+
+    private void ToggleQuestPointsDisplay(bool display)
     {
-        displayActive = display;
+        questDisplayActive = display;
         if (display)
         {
-            StartCoroutine(HideExtractionPointsAfterDelay(GTFOPlugin.displayTime.Value));
-        }
-        else
-        {
-            HideExtractionPoints();
+            StartCoroutine(HideQuestPointsAfterDelay(GTFOPlugin.displayTime.Value));
         }
     }
 
-    private IEnumerator HideExtractionPointsAfterDelay(float delay)
+    private void ToggleExtractionPointsDisplay(bool display)
+    {
+        extractDisplayActive = display;
+        if (display)
+        {
+            StartCoroutine(HideExtractPointsAfterDelay(GTFOPlugin.displayTime.Value));
+        }
+    }
+
+    private IEnumerator HideQuestPointsAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        HideQuestPoints();
+    }
+
+    private void HideQuestPoints()
+    {
+        questDisplayActive = false;
+    }
+
+    private IEnumerator HideExtractPointsAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
         HideExtractionPoints();
@@ -62,15 +90,20 @@ public class GTFOComponent : MonoBehaviour
 
     private void HideExtractionPoints()
     {
-        displayActive = false;
+        extractDisplayActive = false;
     }
 
 
     private void OnGUI()
     {
-        if (displayActive)
+        if (extractDisplayActive)
         {
-            GUIHelper.DrawLabels(displayActive, ExtractManager.extractPositions, ExtractManager.extractDistances, ExtractManager.extractNames, player);
+            GUIHelper.DrawExtracts(extractDisplayActive, ExtractManager.extractPositions, ExtractManager.extractDistances, ExtractManager.extractNames, player);
+        }
+
+        if (questDisplayActive)
+        {
+            GUIHelper.DrawQuests(questDisplayActive);
         }
     }
 
