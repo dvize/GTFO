@@ -22,7 +22,7 @@ namespace GTFO
             player = GTFOComponent.player;
 
             var absQuestController = Traverse.Create(player).Field("_questController").GetValue<AbstractQuestControllerClass>();
-            
+
             //Quests property references gclass3367_0 field
             var quests = Traverse.Create(absQuestController).Field("gclass3367_0").GetValue<GClass3367>();
 
@@ -163,7 +163,7 @@ namespace GTFO
 #endif
                                     break;
                                 }
-                            
+
                             case ConditionCounterCreator counterCreator:
                                 {
 #if DEBUG
