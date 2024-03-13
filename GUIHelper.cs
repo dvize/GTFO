@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using EFT;
 using EFT.Interactive;
 using UnityEngine;
@@ -77,11 +78,24 @@ namespace GTFO
         }
         internal static void UpdateLabels()
         {
-            List<ExfiltrationPoint> enabledPoints = ExtractManager.GetEnabledExfiltrationPoints();
+            if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            {
+                var enabledPoints = ExtractManager.GetEnabledExfiltrationPoints();
+                SetUpdateLabelsInfo(enabledPoints, (ExfiltrationPoint point) => point.transform.position, (ExfiltrationPoint point) => point.Settings.Name.Localized());
+            }
+            else
+            {
+                var enabledPoints = ExtractManager.GetEnabledScavExfiltrationPoints();
+                SetUpdateLabelsInfo(enabledPoints, (ScavExfiltrationPoint point) => point.transform.position, (ScavExfiltrationPoint point) => point.Settings.Name.Localized());
+            }
+        }
+
+        private static void SetUpdateLabelsInfo<T>(List<T> enabledPoints, Func<T, Vector3> getPosition, Func<T, string> getName)
+        {
             for (int i = 0; i < enabledPoints.Count; i++)
             {
-                ExtractManager.extractPositions[i] = enabledPoints[i].transform.position;
-                ExtractManager.extractNames[i] = enabledPoints[i].Settings.Name.Localized();
+                ExtractManager.extractPositions[i] = getPosition(enabledPoints[i]);
+                ExtractManager.extractNames[i] = getName(enabledPoints[i]);
                 ExtractManager.extractDistances[i] = Vector3.Distance(ExtractManager.extractPositions[i], GTFOComponent.player.Position);
             }
         }

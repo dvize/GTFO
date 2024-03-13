@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.4")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.6")]
     public class GTFOPlugin : BaseUnityPlugin
     {
         public static ConfigEntry<bool> enabledPlugin;
