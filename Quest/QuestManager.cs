@@ -8,7 +8,8 @@ namespace GTFO
 {
     internal class QuestManager
     {
-        internal QuestDataService questDataService = new QuestDataService();
+
+        internal QuestDataService questDataService = new QuestDataService(GTFOComponent.gameWorld, GTFOComponent.player);
         public void Initialize()
         {
             SetupInitialQuests();

@@ -16,7 +16,7 @@ namespace CactusPie.MapLocation.Patches
             {
                 MethodInfo method = type.GetMethod("TryNotifyConditionChanged", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                if (method != null && type.BaseType == typeof(QuestControllerClass))
+                if (method != null && type.BaseType == typeof(GClass3205))
                 {
                     return method;
                 }
@@ -28,7 +28,7 @@ namespace CactusPie.MapLocation.Patches
         }
 
         [PatchPostfix]
-        public static void PatchPostfix(QuestClass quest)
+        public static void PatchPostfix(GClass1249 quest)
         {
             try
             {
