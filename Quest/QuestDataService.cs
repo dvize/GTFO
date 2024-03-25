@@ -14,11 +14,9 @@ namespace GTFO
 {
     internal class QuestDataService
     {
-        public IReadOnlyList<QuestData> QuestMarkers { get; private set; } = Array.Empty<QuestData>();
+        internal IReadOnlyList<QuestData> QuestObjectives { get; private set; } = Array.Empty<QuestData>();
         private readonly GameWorld _gameWorld;
         private readonly Player _player;
-
-        // Constructor for dependency injection
         public QuestDataService(GameWorld gameWorld, Player player)
         {
             _gameWorld = gameWorld ?? throw new ArgumentNullException(nameof(gameWorld));
@@ -27,7 +25,7 @@ namespace GTFO
 
         public void ReloadQuestData(TriggerWithId[] allTriggers)
         {
-            var questMarkerData = new List<QuestData>();
+            var questObjectiveData = new List<QuestData>();
             var questsList = GetQuestsList();
             var lootItems = GetLootItems();
             (string Id, LootItem Item)[] questItems =
@@ -40,11 +38,11 @@ namespace GTFO
                     if (quest.Status != EQuestStatus.Started)
                         continue;
 
-                    ProcessQuest(quest, allTriggers, questItems, ref questMarkerData);
+                    ProcessQuest(quest, allTriggers, questItems, ref questObjectiveData);
                 }
             }
 
-            QuestMarkers = questMarkerData;
+            QuestObjectives = questObjectiveData;
         }
 
         private List<QuestDataClass> GetQuestsList()
@@ -78,7 +76,7 @@ namespace GTFO
         {
 #if DEBUG
             GTFOComponent.Logger.LogInfo("Processing Condition of type: " + condition.GetType());
-            GTFOComponent.Logger.LogInfo("Condition: " + condition.id.Localized());
+            GTFOComponent.Logger.LogInfo("\tCondition: " + condition.id.Localized());
 #endif
             switch (condition)
             {
@@ -100,7 +98,7 @@ namespace GTFO
                 default:
 #if DEBUG
                     GTFOComponent.Logger.LogError("Unhandled Condition of type: " + condition.GetType());
-                    GTFOComponent.Logger.LogError("Condition: " + condition.id.Localized());
+                    GTFOComponent.Logger.LogError("\tCondition: " + condition.id.Localized());
 #endif
                     break;
             }
@@ -116,8 +114,8 @@ namespace GTFO
             {
 #if DEBUG
                 GTFOComponent.Logger.LogInfo("In Foreach Loop of ConditionCounterCreator");
-                GTFOComponent.Logger.LogInfo("CounterCondition type: " + counterCondition.GetType());
-                GTFOComponent.Logger.LogInfo("CounterCondition: " + counterCondition.id.Localized());
+                GTFOComponent.Logger.LogInfo("\tCounterCondition type: " + counterCondition.GetType());
+                GTFOComponent.Logger.LogInfo("\tCounterCondition: " + counterCondition.id.Localized());
 #endif
 
                 ProcessCounterCondition(counterCondition, nameKey, traderId, isNecessary, allTriggers, ref questMarkerData);

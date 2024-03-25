@@ -62,7 +62,7 @@ namespace GTFO
                 style2.fontSize = 14;
             }
 
-            foreach (QuestData quest in GTFOComponent.questManager.questDataService.QuestMarkers)
+            foreach (QuestData quest in GTFOComponent.questManager.questDataService.QuestObjectives)
             {
                 if (GTFOPlugin.showOnlyNecessaryObjectives.Value)
                 {
