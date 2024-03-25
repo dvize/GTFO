@@ -64,6 +64,14 @@ namespace GTFO
 
             foreach (QuestData quest in GTFOComponent.questManager.questDataService.QuestMarkers)
             {
+                if (GTFOPlugin.showOnlyNecessaryObjectives.Value)
+                {
+                    if (!quest.IsNecessary)
+                    {
+                        continue;
+                    }
+                }
+
                 screenPosition = Camera.main.WorldToScreenPoint(new Vector3((float)quest.Location.X, (float)quest.Location.Y, (float)quest.Location.Z));
 
                 if (screenPosition.x >= 0 && screenPosition.x <= Screen.width &&

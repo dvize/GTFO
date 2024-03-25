@@ -15,15 +15,22 @@ namespace GTFO
         public static ConfigEntry<KeyboardShortcut> extractKeyboardShortcut;
         public static ConfigEntry<KeyboardShortcut> questKeyboardShortcut;
         public static ConfigEntry<float> displayTime;
+        public static ConfigEntry<bool> showOnlyNecessaryObjectives;
 
         private void Awake()
         {
 
             enabledPlugin = Config.Bind(
                 "Main Settings",
-                "Enable",
+                "Enable Mod",
                 true,
                 "Enable the plugin to show with extracts/quests objectives");
+
+            showOnlyNecessaryObjectives = Config.Bind(
+                "Main Settings",
+                "Display Only Necessary Quest Conditions",
+                false,
+                "Only Display Necessary Quest Conditions");
 
             distanceLimit = Config.Bind(
                 "Main Settings",

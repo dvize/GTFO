@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -119,17 +120,8 @@ public class GTFOComponent : MonoBehaviour
 
     bool IsKeyPressed(KeyboardShortcut key)
     {
-        if (!UnityInput.Current.GetKeyDown(key.MainKey))
-        {
-            return false;
-        }
-        foreach (var modifier in key.Modifiers)
-        {
-            if (!UnityInput.Current.GetKey(modifier))
-            {
-                return false;
-            }
-        }
-        return true;
+        if (!UnityInput.Current.GetKeyDown(key.MainKey)) return false;
+
+        return key.Modifiers.All(modifier => UnityInput.Current.GetKey(modifier));
     }
 }
