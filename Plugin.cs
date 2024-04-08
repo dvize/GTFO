@@ -7,15 +7,15 @@ using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.7")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.8")]
     public class GTFOPlugin : BaseUnityPlugin
     {
-        public static ConfigEntry<bool> enabledPlugin;
-        public static ConfigEntry<float> distanceLimit;
-        public static ConfigEntry<KeyboardShortcut> extractKeyboardShortcut;
-        public static ConfigEntry<KeyboardShortcut> questKeyboardShortcut;
-        public static ConfigEntry<float> displayTime;
-        public static ConfigEntry<bool> showOnlyNecessaryObjectives;
+        internal static ConfigEntry<bool> enabledPlugin;
+        internal static ConfigEntry<float> distanceLimit;
+        internal static ConfigEntry<KeyboardShortcut> extractKeyboardShortcut;
+        internal static ConfigEntry<KeyboardShortcut> questKeyboardShortcut;
+        internal static ConfigEntry<float> displayTime;
+        internal static ConfigEntry<bool> showOnlyNecessaryObjectives;
 
         private void Awake()
         {

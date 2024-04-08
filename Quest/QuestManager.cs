@@ -9,19 +9,30 @@ namespace GTFO
     internal class QuestManager
     {
 
-        internal QuestDataService questDataService = new QuestDataService(GTFOComponent.gameWorld, GTFOComponent.player);
+        internal QuestDataService questDataService;
         public void Initialize()
         {
+            questDataService = new QuestDataService(GTFOComponent.gameWorld, GTFOComponent.player);
             SetupInitialQuests();
         }
-        public void SetupInitialQuests()
+        internal void SetupInitialQuests()
         {
-            GTFOComponent.Logger.LogInfo("Calling Reload Quest Data from SetupInitial Quests");
-            questDataService.ReloadQuestData(ZoneDataHelper.GetAllTriggers());
+            if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            {
+                GTFOComponent.Logger.LogInfo("Calling Reload Quest Data from SetupInitial Quests");
+                questDataService.ReloadQuestData(ZoneDataHelper.GetAllTriggers());
+            }
+            else
+            {
+                GTFOComponent.Logger.LogInfo("Not calling Setup Quests as its a SCAV Raid.");
+            }
         }
-        public void OnQuestsChanged(TriggerWithId[] allTriggers)
+        internal void OnQuestsChanged(TriggerWithId[] allTriggers)
         {
-            questDataService.ReloadQuestData(allTriggers);
+            if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            {
+                questDataService.ReloadQuestData(allTriggers);
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace GTFO
 {
-    public sealed class QuestLocation
+    internal sealed class QuestLocation
     {
         public QuestLocation()
         {

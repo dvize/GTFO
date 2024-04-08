@@ -11,16 +11,17 @@ namespace GTFO
 {
     internal class QuestDataService
     {
-        internal IReadOnlyList<QuestData> QuestObjectives { get; private set; } = Array.Empty<QuestData>();
+        internal IReadOnlyList<QuestData> QuestObjectives { get; private set; }
         private readonly GameWorld _gameWorld;
         private readonly Player _player;
         public QuestDataService(GameWorld gameWorld, Player player)
         {
+            QuestObjectives = Array.Empty<QuestData>();
             _gameWorld = gameWorld ?? throw new ArgumentNullException(nameof(gameWorld));
             _player = player ?? throw new ArgumentNullException(nameof(player));
         }
 
-        public void ReloadQuestData(TriggerWithId[] allTriggers)
+        internal void ReloadQuestData(TriggerWithId[] allTriggers)
         {
             var questObjectiveData = new List<QuestData>();
             var questsList = GetQuestsList();

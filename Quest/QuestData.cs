@@ -1,6 +1,6 @@
 namespace GTFO
 {
-    public sealed class QuestData
+    internal sealed class QuestData
     {
         public string Description
         {
