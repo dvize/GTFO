@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Comfort.Common;
+using EFT;
 using EFT.Interactive;
 using EFT.UI;
 using GTFO;
@@ -10,10 +11,22 @@ namespace GTFO
     {
 
         internal QuestDataService questDataService;
-        public void Initialize()
+
+        public void Initialize(ref GameWorld gameWorld, ref Player player)
         {
-            questDataService = new QuestDataService(GTFOComponent.gameWorld, GTFOComponent.player);
+            questDataService = new QuestDataService(ref gameWorld, ref player);
             SetupInitialQuests();
+        }
+        public void Deinitialize()
+        {
+            GTFOComponent.Logger.LogInfo("Deinitializing QuestManager.");
+
+            // Perform any cleanup required for the quest data service
+            if (questDataService != null)
+            {
+                questDataService.Cleanup();
+                questDataService = null;
+            }
         }
         internal void SetupInitialQuests()
         {

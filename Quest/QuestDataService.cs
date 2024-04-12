@@ -11,10 +11,13 @@ namespace GTFO
 {
     internal class QuestDataService
     {
-        internal IReadOnlyList<QuestData> QuestObjectives { get; private set; }
+        internal IReadOnlyList<QuestData> QuestObjectives
+        {
+            get; private set;
+        }
         private readonly GameWorld _gameWorld;
         private readonly Player _player;
-        public QuestDataService(GameWorld gameWorld, Player player)
+        public QuestDataService(ref GameWorld gameWorld, ref Player player)
         {
             QuestObjectives = Array.Empty<QuestData>();
             _gameWorld = gameWorld ?? throw new ArgumentNullException(nameof(gameWorld));
@@ -36,7 +39,7 @@ namespace GTFO
                     if (quest.Status != EQuestStatus.Started)
                         continue;
 
-                    ProcessQuest(quest, allTriggers, questItems, ref questObjectiveData);
+                    ProcessQuest(quest, allTriggers, questItems, questObjectiveData);
                 }
             }
 
@@ -59,18 +62,86 @@ namespace GTFO
             return lootItemsList;
         }
 
-        private void ProcessQuest(QuestDataClass quest, TriggerWithId[] allTriggers, (string Id, LootItem Item)[] questItems, ref List<QuestData> questMarkerData)
+        private void ProcessQuest(QuestDataClass quest, TriggerWithId[] allTriggers, (string Id, LootItem Item)[] questItems, List<QuestData> questMarkerData)
         {
+            // Check if any of the main arguments are null
+            if (quest == null)
+            {
+                GTFOComponent.Logger.LogError("ProcessQuest: 'quest' is null");
+                return;
+            }
+            if (allTriggers == null)
+            {
+                GTFOComponent.Logger.LogError("ProcessQuest: 'allTriggers' is null");
+                return;
+            }
+            if (questItems == null)
+            {
+                GTFOComponent.Logger.LogError("ProcessQuest: 'questItems' is null");
+                return;
+            }
+            if (questMarkerData == null)
+            {
+                GTFOComponent.Logger.LogError("ProcessQuest: 'questMarkerData' is null");
+                return;
+            }
+
+            // Check critical properties of the quest
+            if (quest.Template == null)
+            {
+                GTFOComponent.Logger.LogError("ProcessQuest: 'quest.Template' is null");
+                return;
+            }
+            if (quest.Template.Conditions == null)
+            {
+                GTFOComponent.Logger.LogError("ProcessQuest: 'quest.Template.Conditions' is null");
+                return;
+            }
+
             var nameKey = quest.Template.NameLocaleKey;
             var traderId = quest.Template.TraderId;
 
-            foreach (var condition in quest.Template.Conditions[EQuestStatus.AvailableForFinish])
+            if (nameKey == null)
             {
-                ProcessCondition(condition, allTriggers, questItems, nameKey, traderId, ref questMarkerData);
+                GTFOComponent.Logger.LogError("ProcessQuest: 'nameKey' is null");
+                return;
+            }
+            if (traderId == null)
+            {
+                GTFOComponent.Logger.LogError("ProcessQuest: 'traderId' is null");
+                return;
+            }
+#if DEBUG
+            GTFOComponent.Logger.LogWarning($"Quest: {nameKey.Localized()}");
+            GTFOComponent.Logger.LogWarning($"Description: {quest.Template.Description?.Localized()}");
+            GTFOComponent.Logger.LogWarning($"Trader: {traderId.Localized()}");
+#endif
+
+            // Ensuring that there is a list of conditions to process
+            if (!quest.Template.Conditions.TryGetValue(EQuestStatus.AvailableForFinish, out var conditions) || conditions == null)
+            {
+                GTFOComponent.Logger.LogError("ProcessQuest: 'conditions' is null or not found for AvailableForFinish status");
+                return;
+            }
+
+            foreach (var condition in conditions)
+            {
+                if (condition == null)
+                {
+                    GTFOComponent.Logger.LogError("ProcessQuest: A 'condition' within conditions is null");
+                    continue;
+                }
+
+#if DEBUG
+                GTFOComponent.Logger.LogWarning($"Processing Condition: {condition.id.Localized()}");
+#endif
+
+                ProcessCondition(condition, allTriggers, questItems, nameKey, traderId, questMarkerData);
             }
         }
 
-        private void ProcessCondition(Condition condition, TriggerWithId[] allTriggers, (string Id, LootItem Item)[] questItems, string nameKey, string traderId, ref List<QuestData> questMarkerData)
+
+        private void ProcessCondition(Condition condition, TriggerWithId[] allTriggers, (string Id, LootItem Item)[] questItems, string nameKey, string traderId, List<QuestData> questMarkerData)
         {
 #if DEBUG
             GTFOComponent.Logger.LogInfo("Processing Condition of type: " + condition.GetType());
@@ -79,19 +150,19 @@ namespace GTFO
             switch (condition)
             {
                 case ConditionLeaveItemAtLocation location:
-                    ProcessConditionPlaceItemClass(location.id, location.zoneId, nameKey, traderId, location.IsNecessary, allTriggers, ref questMarkerData);
+                    ProcessConditionPlaceItemClass(location.id, location.zoneId, nameKey, traderId, location.IsNecessary, allTriggers, questMarkerData);
                     break;
                 case ConditionPlaceBeacon beacon:
-                    ProcessConditionPlaceItemClass(beacon.id, beacon.zoneId, nameKey, traderId, beacon.IsNecessary, allTriggers, ref questMarkerData);
+                    ProcessConditionPlaceItemClass(beacon.id, beacon.zoneId, nameKey, traderId, beacon.IsNecessary, allTriggers, questMarkerData);
                     break;
                 case ConditionFindItem findItem:
-                    ProcessFindItemCondition(findItem.id, findItem.target, nameKey, traderId, findItem.IsNecessary, allTriggers, questItems, ref questMarkerData);
+                    ProcessFindItemCondition(findItem.id, findItem.target, nameKey, traderId, findItem.IsNecessary, allTriggers, questItems, questMarkerData);
                     break;
                 case ConditionLaunchFlare location:
-                    ProcessConditionPlaceItemClass(location.id, location.zoneID, nameKey, traderId, location.IsNecessary, allTriggers, ref questMarkerData);
+                    ProcessConditionPlaceItemClass(location.id, location.zoneID, nameKey, traderId, location.IsNecessary, allTriggers, questMarkerData);
                     break;
                 case ConditionCounterCreator creator:
-                    ProcessConditionCounter(creator, nameKey, traderId, allTriggers, ref questMarkerData);
+                    ProcessConditionCounter(creator, nameKey, traderId, allTriggers, questMarkerData);
                     break;
                 default:
 #if DEBUG
@@ -102,7 +173,7 @@ namespace GTFO
             }
         }
 
-        private void ProcessConditionCounter(ConditionCounterCreator counterCreator, string nameKey, string traderId, TriggerWithId[] allTriggers, ref List<QuestData> questMarkerData)
+        private void ProcessConditionCounter(ConditionCounterCreator counterCreator, string nameKey, string traderId, TriggerWithId[] allTriggers, List<QuestData> questMarkerData)
         {
             var counter = Traverse.Create(counterCreator).Field("_templateConditions").GetValue<ConditionCounterTemplate>();
             var conditions = Traverse.Create(counter).Field("Conditions").GetValue<GClass3368>();
@@ -116,12 +187,12 @@ namespace GTFO
                 GTFOComponent.Logger.LogInfo("\t\tCounterCondition: " + counterCondition.id.Localized());
 #endif
 
-                ProcessCounterCondition(counterCondition, nameKey, traderId, allTriggers, ref questMarkerData);
+                ProcessCounterCondition(counterCondition, nameKey, traderId, allTriggers, questMarkerData);
             }
 
         }
 
-        private void ProcessConditionPlaceItemClass(string conditionId, string zoneId, string nameKey, string traderId, bool isNecessary, IEnumerable<TriggerWithId> allTriggers, ref List<QuestData> questMarkerData)
+        private void ProcessConditionPlaceItemClass(string conditionId, string zoneId, string nameKey, string traderId, bool isNecessary, IEnumerable<TriggerWithId> allTriggers, List<QuestData> questMarkerData)
         {
             TriggerWithId[] triggersArray = allTriggers.ToArray();
             IEnumerable<PlaceItemTrigger> zoneTriggers = triggersArray.GetZoneTriggers<PlaceItemTrigger>(zoneId);
@@ -143,7 +214,8 @@ namespace GTFO
             }
         }
 
-        private void ProcessFindItemCondition(string conditionId, string[] itemIds, string nameKey, string traderId, bool isNecessary, IEnumerable<TriggerWithId> allTriggers, (string Id, LootItem Item)[] questItems, ref List<QuestData> questMarkerData)
+        private void ProcessFindItemCondition(string conditionId, string[] itemIds, string nameKey, string traderId, bool isNecessary, IEnumerable<TriggerWithId> allTriggers,
+            (string Id, LootItem Item)[] questItems, List<QuestData> questMarkerData)
         {
             foreach (string itemId in itemIds)
             {
@@ -168,17 +240,17 @@ namespace GTFO
 
         }
 
-        private void ProcessCounterCondition(Condition counterCondition, string nameKey, string traderId, TriggerWithId[] allTriggers, ref List<QuestData> questMarkerData)
+        private void ProcessCounterCondition(Condition counterCondition, string nameKey, string traderId, TriggerWithId[] allTriggers, List<QuestData> questMarkerData)
         {
             switch (counterCondition)
             {
                 case ConditionVisitPlace place:
                     //ProcessConditionGeneric(place.id, place.target, nameKey, traderId, place.IsNecessary, allTriggers, ref questMarkerData);
-                    ProcessConditionVisitPlace(place, nameKey, traderId, true, allTriggers, ref questMarkerData);
+                    ProcessConditionVisitPlace(place, nameKey, traderId, true, allTriggers, questMarkerData);
                     break;
                 case ConditionInZone zone:
                     //ProcessConditionInZone(zone, nameKey, traderId, zone.IsNecessary, allTriggers, ref questMarkerData);
-                    ProcessConditionInZone(zone, nameKey, traderId, true, allTriggers, ref questMarkerData);
+                    ProcessConditionInZone(zone, nameKey, traderId, true, allTriggers, questMarkerData);
                     break;
                 default:
 #if DEBUG
@@ -189,7 +261,7 @@ namespace GTFO
             }
         }
 
-        private void ProcessConditionInZone(ConditionInZone zone, string nameKey, string traderId, bool isNecessary, TriggerWithId[] allTriggers, ref List<QuestData> questMarkerData)
+        private void ProcessConditionInZone(ConditionInZone zone, string nameKey, string traderId, bool isNecessary, TriggerWithId[] allTriggers, List<QuestData> questMarkerData)
         {
             string[] zoneIds = zone.zoneIds;
 
@@ -223,7 +295,7 @@ namespace GTFO
 
         }
 
-        private void ProcessConditionVisitPlace(ConditionVisitPlace place, string nameKey, string traderId, bool isNecessary, TriggerWithId[] allTriggers, ref List<QuestData> questMarkerData)
+        private void ProcessConditionVisitPlace(ConditionVisitPlace place, string nameKey, string traderId, bool isNecessary, TriggerWithId[] allTriggers, List<QuestData> questMarkerData)
         {
             string zoneId = place.target;
 
@@ -251,6 +323,14 @@ namespace GTFO
                     questMarkerData.Add(staticInfo);
                 }
             }
+        }
+
+        internal void Cleanup()
+        {
+            GTFOComponent.Logger.LogInfo("Cleaning up QuestDataService.");
+
+            // Clear the quest objectives list to release references to quest data
+            QuestObjectives = Array.Empty<QuestData>();
         }
         internal QuestLocation ToQuestLocation(UnityEngine.Vector3 vector)
         {

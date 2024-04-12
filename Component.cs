@@ -31,7 +31,7 @@ public class GTFOComponent : MonoBehaviour
         questDisplayActive = false;
 
         ExtractManager.Initialize();
-        questManager.Initialize();
+        questManager.Initialize(ref gameWorld, ref player);
     }
 
     private void Update()
@@ -124,4 +124,44 @@ public class GTFOComponent : MonoBehaviour
 
         return key.Modifiers.All(modifier => UnityInput.Current.GetKey(modifier));
     }
+
+    private void OnDestroy()
+    {
+        if (Logger != null)
+        {
+            Logger.LogInfo("GTFOComponent is being destroyed");
+        }
+
+        // Disable any active displays to ensure they don't persist in the UI
+        if (extractDisplayActive)
+        {
+            HideExtractionPoints();
+        }
+
+        if (questDisplayActive)
+        {
+            HideQuestPoints();
+        }
+
+        // Deinitialize any managers or services that were initialized
+        ExtractManager.Deinitialize();
+        if (questManager != null)
+        {
+            questManager.Deinitialize();
+        }
+
+        // Remove the log source if it was created
+        if (Logger != null)
+        {
+            Logger.Dispose();
+            Logger = null;
+        }
+
+        // Clear static references to prevent memory leaks
+        gameWorld = null;
+        player = null;
+        questManager = null;
+    }
+
+
 }

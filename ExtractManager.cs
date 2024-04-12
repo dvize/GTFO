@@ -22,7 +22,19 @@ namespace GTFO
             SetupInitialExtracts();
             SetupExtractArrays();
         }
+        public static void Deinitialize()
+        {
+            // Clear lists of enabled extraction points
+            enabledExfiltrationPoints.Clear();
+            enabledScavExfiltrationPoints.Clear();
 
+            // Nullify or clear arrays for garbage collection
+            extractPositions = null;
+            extractNames = null;
+            extractDistances = null;
+
+            GTFOComponent.Logger.LogInfo("ExtractManager has been deinitialized and resources cleared.");
+        }
         private static void SetupInitialExtracts()
         {
             //check if we are in a scav run
