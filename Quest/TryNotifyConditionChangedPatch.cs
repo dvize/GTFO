@@ -3,54 +3,23 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Aki.Reflection.Patching;
 using EFT.Interactive;
-using GTFO;
+using HarmonyLib;
 
-namespace CactusPie.MapLocation.Patches
+namespace GTFO
 {
     public class TryNotifyConditionChangedPatch : ModulePatch
     {
-        internal static TriggerWithId[] triggers;
         protected override MethodBase GetTargetMethod()
         {
-            foreach (Type type in typeof(EFT.AbstractGame).Assembly.GetTypes())
-            {
-                MethodInfo method = type.GetMethod("TryNotifyConditionChanged", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                if (method != null && type.BaseType == typeof(GClass3205))
-                {
-                    return method;
-                }
-            }
-
-            Logger.LogError("Could not find TryNotifyConditionChanged method");
-
-            return null;
+            return AccessTools.Method(typeof(GClass3205), nameof(GClass3205.TryNotifyConditionChanged));
         }
 
         [PatchPostfix]
-        public static void PatchPostfix(GClass1249 quest)
+        public static void Postfix(ref GClass1249 quest)
         {
-            try
-            {
-                triggers = ZoneDataHelper.GetAllTriggers();
+            GTFOComponent.questManager.OnQuestsChanged(quest);
 
-                Task.Run(
-                    () =>
-                    {
-                        try
-                        {
-                            GTFOComponent.questManager.OnQuestsChanged(triggers);
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.LogError($"Exception {e.GetType()} occured. Message: {e.Message}. StackTrace: {e.StackTrace}");
-                        }
-                    });
-            }
-            catch (Exception e)
-            {
-                Logger.LogError($"Exception {e.GetType()} occured. Message: {e.Message}. StackTrace: {e.StackTrace}");
-            }
         }
     }
 }

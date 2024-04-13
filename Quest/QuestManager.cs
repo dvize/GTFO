@@ -33,18 +33,22 @@ namespace GTFO
             if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
                 GTFOComponent.Logger.LogInfo("Calling Reload Quest Data from SetupInitial Quests");
-                questDataService.ReloadQuestData(ZoneDataHelper.GetAllTriggers());
+                questDataService.InitialQuestData(ZoneDataHelper.GetAllTriggers());
             }
             else
             {
                 GTFOComponent.Logger.LogInfo("Not calling Setup Quests as its a SCAV Raid.");
             }
         }
-        internal void OnQuestsChanged(TriggerWithId[] allTriggers)
+
+        internal void OnQuestsChanged(GClass1249 bsgQuest)
         {
             if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
-                questDataService.ReloadQuestData(allTriggers);
+#if DEBUG
+                GTFOComponent.Logger.LogInfo("Calling Reload Quest Data from OnQuestsChanged");
+#endif
+                questDataService.UpdateQuestCompletedConditions(bsgQuest);
             }
         }
     }

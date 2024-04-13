@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Aki.Reflection.Patching;
 using BepInEx;
 using BepInEx.Configuration;
@@ -17,6 +18,7 @@ namespace GTFO
         internal static ConfigEntry<float> displayTime;
         internal static ConfigEntry<bool> showOnlyNecessaryObjectives;
 
+        internal static bool QuestTrackerEnabled = false;
         private void Awake()
         {
 
@@ -57,8 +59,10 @@ namespace GTFO
                 "Amount of Time to Display Objective Points");
 
             new NewGamePatch().Enable();
+            new TryNotifyConditionChangedPatch().Enable();
         }
 
+        
     }
 
     //re-initializes each new game

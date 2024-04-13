@@ -12,6 +12,11 @@ namespace GTFO
             get; set;
         }
 
+        public string ParentId
+        {
+            get; set;
+        }
+
         public QuestLocation Location
         {
             get; set;
@@ -33,6 +38,11 @@ namespace GTFO
         }
 
         public bool IsNecessary
+        {
+            get; set;
+        }
+
+        public bool IsCompleted
         {
             get; set;
         }
