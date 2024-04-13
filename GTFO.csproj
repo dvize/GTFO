@@ -85,9 +85,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>F:\SPT-AKI-DEV\EscapeFromTarkov_Data\Managed\DissonanceVoip.dll</HintPath>
     </Reference>
-    <Reference Include="DrakiaXYZ-QuestTracker">
-      <HintPath>F:\SPT-AKI-DEV\BepInEx\plugins\DrakiaXYZ-QuestTracker\DrakiaXYZ-QuestTracker.dll</HintPath>
-    </Reference>
     <Reference Include="Sirenix.Serialization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="System.Core" />

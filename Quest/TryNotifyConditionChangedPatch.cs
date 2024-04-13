@@ -1,8 +1,5 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using Aki.Reflection.Patching;
-using EFT.Interactive;
 using HarmonyLib;
 
 namespace GTFO

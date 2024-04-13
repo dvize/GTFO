@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using Comfort.Common;
-using EFT;
-using EFT.Interactive;
-using EFT.UI;
-using GTFO;
+﻿using EFT;
 
 namespace GTFO
 {

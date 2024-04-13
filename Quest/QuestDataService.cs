@@ -73,15 +73,15 @@ namespace GTFO
 
         internal void UpdateQuestCompletedConditionals(string id)
         {
-/*#if DEBUG
-            GTFOComponent.Logger.LogWarning($"Updated Special Visit with id: {id}");
-#endif*/
+            /*#if DEBUG
+                        GTFOComponent.Logger.LogWarning($"Updated Special Visit with id: {id}");
+            #endif*/
             //find the id in the quest objectives and remove it
             for (int i = 0; i < QuestObjectives.Count; i++)
             {
-/*#if DEBUG
-                GTFOComponent.Logger.LogError($"Checking Zone ID: {QuestObjectives[i].ZoneId}");
-#endif*/
+                /*#if DEBUG
+                                GTFOComponent.Logger.LogError($"Checking Zone ID: {QuestObjectives[i].ZoneId}");
+                #endif*/
                 if (QuestObjectives[i].ZoneId != null && QuestObjectives[i].ZoneId.Equals(id, StringComparison.OrdinalIgnoreCase))
                 {
                     QuestObjectives.RemoveAt(i);
