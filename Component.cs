@@ -6,7 +6,6 @@ using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
 using GTFO;
-using HarmonyLib;
 using UnityEngine;
 
 public class GTFOComponent : MonoBehaviour

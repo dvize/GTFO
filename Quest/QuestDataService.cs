@@ -53,7 +53,7 @@ namespace GTFO
         internal void UpdateQuestCompletedConditions(GClass1249 bsgQuest)
         {
 #if DEBUG
-            GTFOComponent.Logger.LogWarning($"Reloading Quest Data from BSG Quest: {bsgQuest.Id.LocalizedName()} of type {bsgQuest.QuestTypeName} \r ID: {bsgQuest.Id}");
+            GTFOComponent.Logger.LogWarning($"Updating Completed Quest Data from BSG Quest: {bsgQuest.Id.LocalizedName()} of type {bsgQuest.QuestTypeName} \r ID: {bsgQuest.Id}");
 #endif
             // Iterate through QuestObjectives to find the completed objective
             for (int i = 0; i < QuestObjectives.Count; i++)
@@ -65,6 +65,26 @@ namespace GTFO
 #endif
                     QuestObjectives.RemoveAt(i);
 
+                    break;
+                }
+            }
+
+        }
+
+        internal void UpdateQuestCompletedConditionals(string id)
+        {
+/*#if DEBUG
+            GTFOComponent.Logger.LogWarning($"Updated Special Visit with id: {id}");
+#endif*/
+            //find the id in the quest objectives and remove it
+            for (int i = 0; i < QuestObjectives.Count; i++)
+            {
+/*#if DEBUG
+                GTFOComponent.Logger.LogError($"Checking Zone ID: {QuestObjectives[i].ZoneId}");
+#endif*/
+                if (QuestObjectives[i].ZoneId != null && QuestObjectives[i].ZoneId.Equals(id, StringComparison.OrdinalIgnoreCase))
+                {
+                    QuestObjectives.RemoveAt(i);
                     break;
                 }
             }
@@ -147,10 +167,10 @@ namespace GTFO
                     ProcessConditionCounter(creator, nameKey, traderId, allTriggers, questMarkerData, quest);
                     break;
                 default:
-#if DEBUG
-                    GTFOComponent.Logger.LogError("Unhandled Condition of type: " + condition.GetType());
-                    GTFOComponent.Logger.LogError("\tCondition: " + condition.id.Localized());
-#endif
+                    /*#if DEBUG
+                                        GTFOComponent.Logger.LogError("Unhandled Condition of type: " + condition.GetType());
+                                        GTFOComponent.Logger.LogError("\tCondition: " + condition.id.Localized());
+                    #endif*/
                     break;
             }
         }
@@ -185,7 +205,7 @@ namespace GTFO
                 var questData = new QuestData
                 {
                     Id = conditionId,
-                    ParentId = quest.Id,
+                    ParentId = null,
                     Location = ToQuestLocation(trigger.transform.position),
                     ZoneId = zoneId,
                     NameText = nameKey.Localized(),
@@ -211,7 +231,7 @@ namespace GTFO
                         var staticInfo = new QuestData
                         {
                             Id = conditionId,
-                            ParentId = quest.Id,
+                            ParentId = null,
                             Location = ToQuestLocation(questItem.Item.transform.position),
                             NameText = nameKey.Localized(),
                             Description = conditionId.Localized(),
@@ -232,24 +252,23 @@ namespace GTFO
             switch (counterCondition)
             {
                 case ConditionVisitPlace place:
-                    //ProcessConditionGeneric(place.id, place.target, nameKey, traderId, place.IsNecessary, allTriggers, ref questMarkerData);
                     ProcessConditionVisitPlace(place, nameKey, traderId, true, allTriggers, questMarkerData, quest);
                     break;
                 case ConditionInZone zone:
-                    //ProcessConditionInZone(zone, nameKey, traderId, zone.IsNecessary, allTriggers, ref questMarkerData);
                     ProcessConditionInZone(zone, nameKey, traderId, true, allTriggers, questMarkerData, quest);
                     break;
                 default:
-#if DEBUG
-                    GTFOComponent.Logger.LogError("\tUnhandled Counter Condition of type: " + counterCondition.GetType());
-                    GTFOComponent.Logger.LogError("\tCounter Condition: " + counterCondition.id.Localized());
-#endif
+                    /*#if DEBUG
+                                        GTFOComponent.Logger.LogError("\tUnhandled Counter Condition of type: " + counterCondition.GetType());
+                                        GTFOComponent.Logger.LogError("\tCounter Condition: " + counterCondition.id.Localized());
+                    #endif*/
                     break;
             }
         }
 
         private void ProcessConditionInZone(ConditionInZone zone, string nameKey, string traderId, bool isNecessary, TriggerWithId[] allTriggers, List<QuestData> questMarkerData, QuestDataClass quest)
         {
+
             string[] zoneIds = zone.zoneIds;
 
             foreach (string zoneId in zoneIds)
@@ -264,7 +283,7 @@ namespace GTFO
                         var staticInfo = new QuestData
                         {
                             Id = zone.id,
-                            ParentId = quest.Id,
+                            ParentId = zone.parentId,
                             Location = ToQuestLocation(trigger.transform.position),
                             ZoneId = zoneId,
                             NameText = nameKey.Localized(),
@@ -291,28 +310,29 @@ namespace GTFO
             IEnumerable<ExperienceTrigger> zoneTriggers =
                 allTriggers.GetZoneTriggers<ExperienceTrigger>(zoneId);
 
-            if (zoneTriggers != null)
+            if (zoneTriggers != null && zoneTriggers.Any())
             {
-                foreach (ExperienceTrigger trigger in zoneTriggers)
+                ExperienceTrigger trigger = zoneTriggers.First();  // Get the first trigger since it spawns nearby triggers anyways?
+
+                var staticInfo = new QuestData
                 {
-                    var staticInfo = new QuestData
-                    {
-                        Id = place.id,
-                        ParentId = quest.Id,
-                        Location = ToQuestLocation(trigger.transform.position),
-                        ZoneId = zoneId,
-                        NameText = nameKey.Localized(),
-                        Description = place.id.Localized(),
-                        Trader = TraderIdToName(traderId),
-                        IsNecessary = isNecessary,
-                        IsCompleted = false,
-                    };
+                    Id = place.id,
+                    ParentId = quest.Id,
+                    Location = ToQuestLocation(trigger.transform.position),
+                    ZoneId = zoneId,
+                    NameText = nameKey.Localized(),
+                    Description = place.id.Localized(),
+                    Trader = TraderIdToName(traderId),
+                    IsNecessary = isNecessary,
+                    IsCompleted = false,
+                };
 
 #if DEBUG
-                    GTFOComponent.Logger.LogError("\t\tSetting isNecessary: " + staticInfo.IsNecessary + " for quest: " + staticInfo.NameText);
+                GTFOComponent.Logger.LogError("\t\tSetting isNecessary: " + staticInfo.IsNecessary + " for quest: " + staticInfo.NameText);
+                GTFOComponent.Logger.LogError("\t\tSetting Condition VisitPlace Zone Id: " + staticInfo.ZoneId);
 #endif
-                    questMarkerData.Add(staticInfo);
-                }
+                questMarkerData.Add(staticInfo);
+
             }
         }
         internal void Cleanup()

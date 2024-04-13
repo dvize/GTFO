@@ -1,14 +1,14 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using Aki.Reflection.Patching;
 using BepInEx;
 using BepInEx.Configuration;
+using dvize.GTFO.Quest;
 using EFT;
 using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.8")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.9")]
     public class GTFOPlugin : BaseUnityPlugin
     {
         internal static ConfigEntry<bool> enabledPlugin;
@@ -18,7 +18,6 @@ namespace GTFO
         internal static ConfigEntry<float> displayTime;
         internal static ConfigEntry<bool> showOnlyNecessaryObjectives;
 
-        internal static bool QuestTrackerEnabled = false;
         private void Awake()
         {
 
@@ -60,20 +59,23 @@ namespace GTFO
 
             new NewGamePatch().Enable();
             new TryNotifyConditionChangedPatch().Enable();
+            new SpecialPlaceVisitedPatch().Enable();
+
         }
 
-        
-    }
 
-    //re-initializes each new game
-    internal class NewGamePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod() => typeof(GameWorld).GetMethod(nameof(GameWorld.OnGameStarted));
-
-        [PatchPrefix]
-        public static void PatchPrefix()
-        {
-            GTFOComponent.Enable();
-        }
     }
 }
+
+//re-initializes each new game
+internal class NewGamePatch : ModulePatch
+{
+    protected override MethodBase GetTargetMethod() => typeof(GameWorld).GetMethod(nameof(GameWorld.OnGameStarted));
+
+    [PatchPrefix]
+    public static void PatchPrefix()
+    {
+        GTFOComponent.Enable();
+    }
+}
+

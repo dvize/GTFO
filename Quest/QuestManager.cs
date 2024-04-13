@@ -46,9 +46,20 @@ namespace GTFO
             if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
 #if DEBUG
-                GTFOComponent.Logger.LogInfo("Calling Reload Quest Data from OnQuestsChanged");
+                GTFOComponent.Logger.LogInfo("Calling Update Quest Completed Conditions from OnQuestsChanged");
 #endif
                 questDataService.UpdateQuestCompletedConditions(bsgQuest);
+            }
+        }
+
+        internal void OnConditionalQuestsChanged(string id)
+        {
+            if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            {
+#if DEBUG
+                GTFOComponent.Logger.LogInfo("Calling Update Quest Completed Conditionals from OnQuestsChanged");
+#endif
+                questDataService.UpdateQuestCompletedConditionals(id);
             }
         }
     }
