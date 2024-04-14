@@ -9,8 +9,8 @@ namespace GTFO
 {
     public static class GUIHelper
     {
-        private static GUIStyle style;
-        private static GUIStyle style2;
+        private static GUIStyle extractStyle;
+        private static GUIStyle questStyle;
         private static bool stylesInitialized = false;
         private static Vector2 lastScreenSize = Vector2.zero;
 
@@ -31,18 +31,20 @@ namespace GTFO
 
         internal static void InitializeStyles()
         {
-            style = new GUIStyle()
+            extractStyle = new GUIStyle()
             {
-                normal = { textColor = Color.green, background = Texture2D.blackTexture },
+                normal = { textColor = GTFOPlugin.extractStyleColor.Value, background = Texture2D.blackTexture },
                 fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = GTFOPlugin.TextSize.Value
             };
 
-            style2 = new GUIStyle()
+            questStyle = new GUIStyle()
             {
-                normal = { textColor = Color.red, background = Texture2D.blackTexture },
+                normal = { textColor = GTFOPlugin.questStyleColor.Value, background = Texture2D.blackTexture },
                 fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = GTFOPlugin.TextSize.Value
             };
         }
 
@@ -75,7 +77,7 @@ namespace GTFO
 
                     // Adjusted Y position taking into account pitch adjustment and screen height
                     float adjustedY = Screen.height - screenPosition.y - labelHeight / 2;
-                    GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, style);
+                    GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, extractStyle);
                 }
             }
         }
@@ -166,7 +168,7 @@ namespace GTFO
 
                             string label = $"Quest Name: {nameText}\nDescription: {description}\nDistance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
 
-                            GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, style2);
+                            GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, questStyle);
                         }
                     }
                 }

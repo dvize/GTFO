@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using dvize.GTFO.Quest;
 using EFT;
 using UnityEngine;
+using static GClass1738;
 
 namespace GTFO
 {
@@ -17,9 +18,12 @@ namespace GTFO
         internal static ConfigEntry<KeyboardShortcut> questKeyboardShortcut;
         internal static ConfigEntry<float> displayTime;
         internal static ConfigEntry<bool> showOnlyNecessaryObjectives;
+
         internal static ConfigEntry<int> descriptionMaxCharacterLimit;
         internal static ConfigEntry<int> descriptionWordWrapCharacterLimit;
-
+        internal static ConfigEntry<int> TextSize;
+        internal static ConfigEntry<Color> extractStyleColor;
+        internal static ConfigEntry<Color> questStyleColor;
         private void Awake()
         {
 
@@ -70,6 +74,24 @@ namespace GTFO
                 "Description Word Wrap Character Limit",
                 25,
                 "How many wide the description can display");
+
+            TextSize = Config.Bind<int>(
+                "GUI", 
+                "Text Font Size", 
+                14, 
+                "Size of the text for display.");
+
+            extractStyleColor = Config.Bind<Color>(
+                "GUI", 
+                "Extract Style Color", 
+                Color.green, 
+                "Text color for Extracts.");
+
+            questStyleColor = Config.Bind<Color>(
+                "GUI", 
+                "Quest Style Color", 
+                Color.red, 
+                "Text color for Quests.");
 
             new NewGamePatch().Enable();
             new TryNotifyConditionChangedPatch().Enable();
