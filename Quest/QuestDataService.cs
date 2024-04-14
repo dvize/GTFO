@@ -108,8 +108,20 @@ namespace GTFO
 
         private void ProcessQuest(QuestDataClass quest, TriggerWithId[] allTriggers, (string Id, LootItem Item)[] questItems, List<QuestData> questMarkerData)
         {
-            var nameKey = quest.Template.NameLocaleKey;
-            var traderId = quest.Template.TraderId;
+            if (quest == null || quest.Template == null || quest.Template.Conditions == null)
+            {
+                GTFOComponent.Logger.LogError("Invalid quest data");
+                return;
+            }
+
+            var nameKey = quest?.Template?.NameLocaleKey;
+            var traderId = quest?.Template?.TraderId;
+
+            if (nameKey == null || traderId == null)
+            {
+                GTFOComponent.Logger.LogError("Quest NameLocaleKey or TraderId is missing: " + quest?.Template?.Name);
+                return;
+            }
 
 #if DEBUG
             GTFOComponent.Logger.LogWarning($"Quest: {nameKey.Localized()}");
@@ -321,7 +333,7 @@ namespace GTFO
                     Location = ToQuestLocation(trigger.transform.position),
                     ZoneId = zoneId,
                     NameText = nameKey.Localized(),
-                    Description = place.id.Localized(),
+                    Description = "Visit Location",
                     Trader = TraderIdToName(traderId),
                     IsNecessary = isNecessary,
                     IsCompleted = false,

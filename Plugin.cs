@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.0.9")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.1.0")]
     public class GTFOPlugin : BaseUnityPlugin
     {
         internal static ConfigEntry<bool> enabledPlugin;
@@ -17,6 +17,8 @@ namespace GTFO
         internal static ConfigEntry<KeyboardShortcut> questKeyboardShortcut;
         internal static ConfigEntry<float> displayTime;
         internal static ConfigEntry<bool> showOnlyNecessaryObjectives;
+        internal static ConfigEntry<int> descriptionMaxCharacterLimit;
+        internal static ConfigEntry<int> descriptionWordWrapCharacterLimit;
 
         private void Awake()
         {
@@ -56,6 +58,18 @@ namespace GTFO
                 "Display Time",
                 10f,
                 "Amount of Time to Display Objective Points");
+
+            descriptionMaxCharacterLimit = Config.Bind(
+                "Main Settings",
+                "Description Max Character Limit",
+                50,
+                "How long the description should be displayed before truncated.\nNeeds to be higher than Description Word Wrap Character Limit");
+
+            descriptionWordWrapCharacterLimit = Config.Bind(
+                "Main Settings",
+                "Description Word Wrap Character Limit",
+                25,
+                "How many wide the description can display");
 
             new NewGamePatch().Enable();
             new TryNotifyConditionChangedPatch().Enable();

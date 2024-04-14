@@ -110,35 +110,69 @@ namespace GTFO
             {
                 EnsureStyles();
 
+                // Check if the main camera is available
+                if (Camera.main == null)
+                    return;
+
                 Vector3 cameraEulerAngles = Camera.main.transform.eulerAngles;
                 float pitchAdjustmentFactor = CalculatePitchAdjustmentFactor(cameraEulerAngles.x);
 
-                foreach (QuestData quest in GTFOComponent.questManager.questDataService.QuestObjectives)
+                if (GTFOComponent.questManager?.questDataService?.QuestObjectives != null)
                 {
-                    if (GTFOPlugin.showOnlyNecessaryObjectives.Value && !quest.IsNecessary)
+                    foreach (QuestData quest in GTFOComponent.questManager.questDataService.QuestObjectives)
                     {
-                        continue;
-                    }
+                        if (quest == null || GTFOComponent.player == null)
+                            continue;
 
-                    Vector3 questPosition = new Vector3((float)quest.Location.X, (float)quest.Location.Y, (float)quest.Location.Z);
-                    Vector3 screenPosition = Camera.main.WorldToScreenPoint(questPosition);
+                        if (GTFOPlugin.showOnlyNecessaryObjectives.Value && !quest.IsNecessary)
+                            continue;
 
-                    // Adjust y based on pitch
-                    screenPosition.y += pitchAdjustmentFactor;
+                        // Safely handle quest.Location and null strings
+                        Vector3 questPosition = quest.Location != null ? new Vector3((float)quest.Location.X, (float)quest.Location.Y, (float)quest.Location.Z) : Vector3.zero;
+                        Vector3 screenPosition = Camera.main.WorldToScreenPoint(questPosition);
 
-                    if (IsOnScreen(screenPosition))
-                    {
-                        float scaleFactor = GetSuperSamplingFactor();
-                        float labelWidth = 200 * scaleFactor;
-                        float labelHeight = 100 * scaleFactor;
-                        float adjustedY = Screen.height - screenPosition.y - labelHeight / 2;
+                        // Adjust y based on pitch
+                        screenPosition.y += pitchAdjustmentFactor;
 
-                        string label = $"Quest Name: {quest.NameText}\nDescription: {quest.Description}\nDistance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
-                        GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, style2);
+                        if (IsOnScreen(screenPosition))
+                        {
+                            float scaleFactor = GetSuperSamplingFactor();
+                            float labelWidth = 200 * scaleFactor;
+                            float labelHeight = 100 * scaleFactor;
+                            float adjustedY = Screen.height - screenPosition.y - labelHeight / 2;
+
+                            // Ensure quest.NameText and quest.Description are not null
+                            string nameText = quest.NameText ?? "Unknown Name";
+                            string description = quest.Description ?? "No description available";
+
+                            // Truncate the description at 50 characters
+                            if (description.Length > GTFOPlugin.descriptionMaxCharacterLimit.Value)
+                            {
+                                description = description.Substring(0, GTFOPlugin.descriptionMaxCharacterLimit.Value);
+                            }
+
+                            // Word wrap the description at 20 characters
+                            if (description.Length > GTFOPlugin.descriptionWordWrapCharacterLimit.Value)
+                            {
+                                int wrapPosition = description.Substring(0, GTFOPlugin.descriptionWordWrapCharacterLimit.Value).LastIndexOf(' ');
+                                if (wrapPosition == -1)
+                                {
+                                    wrapPosition = GTFOPlugin.descriptionWordWrapCharacterLimit.Value;
+                                }
+                                description = description.Insert(wrapPosition, "\n");
+                            }
+
+
+
+                            string label = $"Quest Name: {nameText}\nDescription: {description}\nDistance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+
+                            GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, style2);
+                        }
                     }
                 }
             }
         }
+
         private static float CalculatePitchAdjustmentFactor(float pitchAngle)
         {
             // Normalize pitch angle to [0, 360]

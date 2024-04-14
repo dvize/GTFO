@@ -16,7 +16,14 @@ namespace dvize.GTFO.Quest
         [PatchPostfix]
         public static void Postfix(ref string id, ref int experience)
         {
-            GTFOComponent.questManager.OnConditionalQuestsChanged(id);
+            if (id != null && GTFOComponent.questManager != null)
+            {
+                GTFOComponent.questManager.OnConditionalQuestsChanged(id);
+            }
+            else
+            {
+                GTFOComponent.Logger.LogError("SpecialPlaceVisitedPatch: id is null or QuestManager is null.");
+            }
 
         }
     }
