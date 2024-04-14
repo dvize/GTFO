@@ -23,7 +23,12 @@ namespace GTFO
                 lastScreenSize = new Vector2(Screen.width, Screen.height);
             }
         }
-
+        public static void UpdateStyles()
+        {
+            // Force reinitialization of styles
+            stylesInitialized = false;
+            EnsureStyles();
+        }
         private static bool ScreenSizeChanged()
         {
             return lastScreenSize.x != Screen.width || lastScreenSize.y != Screen.height;

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Aki.Reflection.Patching;
 using BepInEx;
 using BepInEx.Configuration;
@@ -97,8 +98,16 @@ namespace GTFO
             new TryNotifyConditionChangedPatch().Enable();
             new SpecialPlaceVisitedPatch().Enable();
 
-        }
+            // Subscribe to setting changes
+            TextSize.SettingChanged += OnStyleSettingChanged;
+            extractStyleColor.SettingChanged += OnStyleSettingChanged;
+            questStyleColor.SettingChanged += OnStyleSettingChanged;
 
+        }
+        private static void OnStyleSettingChanged(object sender, EventArgs e)
+        {
+            GUIHelper.UpdateStyles();
+        }
 
     }
 }
