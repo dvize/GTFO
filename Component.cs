@@ -161,6 +161,10 @@ public class GTFOComponent : MonoBehaviour
         gameWorld = null;
         player = null;
         questManager = null;
+
+        //Clear quest selection from menu since we want to refresh
+        GTFOPlugin.Instance.ClearQuestDropdownInConfig();
+
     }
 
 

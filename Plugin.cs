@@ -95,8 +95,8 @@ namespace GTFO
             extractDistanceLimit = Config.Bind(
                 "2. Extracts",
                 "Extract Distance Limit",
-                500f,
-                new ConfigDescription("Show Extracts at a Maximum Distance of Up To", new AcceptableValueRange<float>(100f, 1000f), new ConfigurationManagerAttributes { Order = 1 })
+                1000f,
+                new ConfigDescription("Show Extracts at a Maximum Distance of Up To", new AcceptableValueRange<float>(100f, 2000f), new ConfigurationManagerAttributes { Order = 1 })
             );
 
             // Quest Related
@@ -123,8 +123,8 @@ namespace GTFO
             questDistanceLimit = Config.Bind(
                 "3. Quests",
                 "Quest Distance Limit",
-                500f,
-                new ConfigDescription("Show Quests at a Maximum Distance of Up To", new AcceptableValueRange<float>(100f, 1000f), new ConfigurationManagerAttributes { Order = 1})
+                1000f,
+                new ConfigDescription("Show Quests at a Maximum Distance of Up To", new AcceptableValueRange<float>(100f, 2000f), new ConfigurationManagerAttributes { Order = 1})
             );
 
             new NewGamePatch().Enable();
@@ -144,6 +144,9 @@ namespace GTFO
         internal void RebindDropDown(List<string> questsList)
         {
             var questsArray = questsList.ToArray();
+            
+            ClearQuestDropdownInConfig();
+
             questSelection = Config.Bind(
                 "3. Quests",
                 "Quest Selection",
@@ -151,6 +154,17 @@ namespace GTFO
                 new ConfigDescription("Select which quests to display.Options: All, or Specific while in-raid",
                 new AcceptableValueList<string>(questsArray),
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 0 }));
+        }
+
+        internal void ClearQuestDropdownInConfig()
+        {
+            ConfigDefinition targetConfigDefinition = new ConfigDefinition("3. Quests", "Quest Selection");
+
+            //remove Config if it exists so we can rebind.
+            if (Config.ConfigDefinitions.Contains(targetConfigDefinition))
+            {
+                Config.Remove(targetConfigDefinition);
+            }
         }
     }
 }
