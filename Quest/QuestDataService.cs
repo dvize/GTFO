@@ -29,6 +29,8 @@ namespace GTFO
 
             var questObjectiveData = new List<QuestData>();
             var questsList = GetQuestsList();
+
+            DrawQuestDropdown(questsList);
             var lootItems = GetLootItems();
             (string Id, LootItem Item)[] questItems =
                 lootItems.Where(x => x.Item.QuestItem).Select(x => (x.TemplateId, x)).ToArray();
@@ -90,7 +92,7 @@ namespace GTFO
             }
 
         }
-        private List<QuestDataClass> GetQuestsList()
+        internal List<QuestDataClass> GetQuestsList()
         {
             var absQuestController = Traverse.Create(_player).Field("_questController").GetValue<AbstractQuestControllerClass>();
             var quests = Traverse.Create(absQuestController).Property("Quests").GetValue<GClass3362>();
@@ -413,5 +415,53 @@ namespace GTFO
 
             return traderId.Localized();
         }
+
+        //create dictionary of location ID Map
+        internal Dictionary<string, string> mapnameMapping = new Dictionary<string, string>
+        {
+            { "any", "any" },
+            { "55f2d3fd4bdc2d5f408b4567", "factory4_day" },
+            { "59fc81d786f774390775787e", "factory4_night" },
+            { "56f40101d2720b2a4d8b45d6", "bigmap" },
+            { "5704e3c2d2720bac5b8b4567", "Woods" },
+            { "5704e554d2720bac5b8b456e", "Shoreline" },
+            { "5714dbc024597771384a510d", "Interchange" },
+            { "5704e4dad2720bb55b8b4567", "Lighthouse" },
+            { "5b0fc42d86f7744a585f9105", "laboratory" },
+            { "5704e5fad2720bc05b8b4567", "RezervBase" },
+            { "5714dc692459777137212e12", "TarkovStreets" },
+            { "653e6760052c01c1c805532f", "Sandbox" }
+        };
+        
+        internal void DrawQuestDropdown(List<QuestDataClass> questsListOriginal)
+        {
+            //only if GTFOComponent.questManager.questDataService is not null
+            if (GTFOComponent.questManager?.questDataService == null)
+            {
+                return;
+            }
+
+            var questsList = new List<string>() { "All" };
+
+            // Add available quests to the list
+            foreach (var quest in questsListOriginal)
+            {
+                //if the quest is started and questlocation matches current map
+                if (quest.Status == EQuestStatus.Started && 
+                    mapnameMapping[quest.Template.LocationId].ToLower() == Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.LocationId.ToLower())
+                {
+#if DEBUG
+                    GTFOComponent.Logger.LogWarning("DrawQuestDropdown Quest: " + quest.Template.Name + " Status: " + quest.Status);
+                    GTFOComponent.Logger.LogWarning("Location: " + mapnameMapping[quest.Template.LocationId].ToLower());
+#endif
+                    questsList.Add(quest.Template.Name);
+                }
+            }
+
+            GTFOPlugin.Instance.RebindDropDown(questsList);
+
+        }
+
+
     }
 }

@@ -64,7 +64,7 @@ namespace GTFO
 
             for (int i = 0; i < extractPositions.Length; i++)
             {
-                if (extractDistances[i] > GTFOPlugin.distanceLimit.Value)
+                if (extractDistances[i] > GTFOPlugin.extractDistanceLimit.Value)
                 {
                     continue;
                 }
@@ -131,7 +131,15 @@ namespace GTFO
                         if (quest == null || GTFOComponent.player == null)
                             continue;
 
+                        //check if quest selection is made in config menu or if default all
+                        if(GTFOPlugin.questSelection.Value != "All" && quest.NameText != GTFOPlugin.questSelection.Value)
+                            continue;
+
                         if (GTFOPlugin.showOnlyNecessaryObjectives.Value && !quest.IsNecessary)
+                            continue;
+
+                        //check distance to display quests
+                        if(GTFOPlugin.questDistanceLimit.Value < Vector3.Distance(new Vector3((float)quest.Location.X, (float)quest.Location.Y, (float)quest.Location.Z), GTFOComponent.player.Position))
                             continue;
 
                         // Safely handle quest.Location and null strings

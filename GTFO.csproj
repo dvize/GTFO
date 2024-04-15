@@ -117,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Component.cs" />
+    <Compile Include="ConfigurationManagerAttributes.cs" />
     <Compile Include="ExtractManager.cs" />
     <Compile Include="GUIHelper.cs" />
     <Compile Include="Plugin.cs" />
