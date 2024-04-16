@@ -29,8 +29,6 @@ namespace GTFO
 
             var questObjectiveData = new List<QuestData>();
             var questsList = GetQuestsList();
-
-            DrawQuestDropdown(questsList);
             var lootItems = GetLootItems();
             (string Id, LootItem Item)[] questItems =
                 lootItems.Where(x => x.Item.QuestItem).Select(x => (x.TemplateId, x)).ToArray();
@@ -39,7 +37,7 @@ namespace GTFO
 
             if (questsList != null)
             {
-
+                DrawQuestDropdown(questsList);
                 foreach (var quest in questsList)
                 {
                     if (quest.Status != EQuestStatus.Started)
@@ -150,7 +148,14 @@ namespace GTFO
                 GTFOComponent.Logger.LogWarning($"Processing Condition: {condition.id.Localized()}");
 #endif
 
-
+                //check if condition has already been completed
+                if (quest.CompletedConditions.Contains(condition.id))
+                {
+#if DEBUG
+                    GTFOComponent.Logger.LogWarning($"Condition {condition.id.Localized()} has already been completed.");
+                    continue;
+#endif
+                }
                 ProcessCondition(quest, condition, allTriggers, questItems, nameKey, traderId, questMarkerData);
             }
         }
@@ -184,7 +189,7 @@ namespace GTFO
                     /*#if DEBUG
                                         GTFOComponent.Logger.LogError("Unhandled Condition of type: " + condition.GetType());
                                         GTFOComponent.Logger.LogError("\tCondition: " + condition.id.Localized());
-                    #endif*/
+#endif*/
                     break;
             }
         }
@@ -436,7 +441,7 @@ namespace GTFO
         internal void DrawQuestDropdown(List<QuestDataClass> questsListOriginal)
         {
             //only if GTFOComponent.questManager.questDataService is not null
-            if (GTFOComponent.questManager?.questDataService == null)
+            if (GTFOComponent.questManager?.questDataService == null || questsListOriginal == null)
             {
                 return;
             }
@@ -446,19 +451,27 @@ namespace GTFO
             // Add available quests to the list
             foreach (var quest in questsListOriginal)
             {
-                //if the quest is started and questlocation matches current map
-                if (quest.Status == EQuestStatus.Started && 
-                    mapnameMapping[quest.Template.LocationId].ToLower() == Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.LocationId.ToLower())
+                if(quest.Template != null)
                 {
+                    if (quest.Status == EQuestStatus.Started &&
+                    mapnameMapping[quest?.Template?.LocationId].ToLower() == Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.LocationId.ToLower())
+                    {
 #if DEBUG
-                    GTFOComponent.Logger.LogWarning("DrawQuestDropdown Quest: " + quest.Template.Name + " Status: " + quest.Status);
-                    GTFOComponent.Logger.LogWarning("Location: " + mapnameMapping[quest.Template.LocationId].ToLower());
+                        GTFOComponent.Logger.LogWarning("DrawQuestDropdown Quest: " + quest.Template.Name + " Status: " + quest.Status);
+                        GTFOComponent.Logger.LogWarning("Location: " + mapnameMapping[quest.Template.LocationId].ToLower());
 #endif
-                    questsList.Add(quest.Template.Name);
+                        questsList.Add(quest.Template.Name);
+                    }
                 }
+                //if the quest is started and questlocation matches current map
+                
             }
 
-            GTFOPlugin.Instance.RebindDropDown(questsList);
+            if(questsList.Count > 1)
+            {
+                GTFOPlugin.Instance.RebindDropDown(questsList);
+            }
+            
 
         }
 
