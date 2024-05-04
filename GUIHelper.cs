@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Comfort.Common;
 using EFT;
 using EFT.Interactive;
@@ -11,8 +12,34 @@ namespace GTFO
     {
         private static GUIStyle extractStyle;
         private static GUIStyle questStyle;
+        private static Texture2D extractIcon;
+        private static Texture2D questIcon;
         private static bool stylesInitialized = false;
         private static Vector2 lastScreenSize = Vector2.zero;
+
+        internal static void LoadImages()
+        {
+            // Assuming DLL is located in the same directory as the running executable
+            string basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            extractIcon = LoadTexture(Path.Combine(basePath, "extractIcon.png"));
+            questIcon = LoadTexture(Path.Combine(basePath, "questIcon.png"));
+
+        }
+
+        private static Texture2D LoadTexture(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                byte[] fileData = File.ReadAllBytes(filePath);
+                Texture2D texture = new Texture2D(2, 2);
+
+                if (ImageConversion.LoadImage(texture, fileData))
+                {
+                    return texture;
+                }
+            }
+            return null;
+        }
 
         internal static void EnsureStyles()
         {
@@ -36,6 +63,7 @@ namespace GTFO
 
         internal static void InitializeStyles()
         {
+
             extractStyle = new GUIStyle()
             {
                 normal = { textColor = GTFOPlugin.extractStyleColor.Value, background = Texture2D.blackTexture },
@@ -60,8 +88,6 @@ namespace GTFO
 
             EnsureStyles();
 
-            float pitchAdjustmentFactor = CalculatePitchAdjustmentFactor(Camera.main.transform.eulerAngles.x);
-
             for (int i = 0; i < extractPositions.Length; i++)
             {
                 if (extractDistances[i] > GTFOPlugin.extractDistanceLimit.Value)
@@ -69,25 +95,56 @@ namespace GTFO
                     continue;
                 }
 
-                Vector3 screenPosition = Camera.main.WorldToScreenPoint(extractPositions[i]);
+                Vector3 viewportPosition = Camera.main.WorldToViewportPoint(extractPositions[i]);
 
-                screenPosition.y += pitchAdjustmentFactor;
-
-                if (IsOnScreen(screenPosition))
+                if (IsInViewport(viewportPosition))
                 {
                     float scaleFactor = GetSuperSamplingFactor();
                     float labelWidth = 200 * scaleFactor;
                     float labelHeight = 50 * scaleFactor;
-                    string label = $"Extract Name: {extractNames[i]}\nDistance: {extractDistances[i]:F2} meters";
 
-                    // Adjusted Y position taking into account pitch adjustment and screen height
-                    float adjustedY = Screen.height - screenPosition.y - labelHeight / 2;
-                    GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, extractStyle);
+                    // Convert viewport position back to screen coordinates for drawing
+                    Vector3 screenPosition = new Vector3(
+                        viewportPosition.x * Screen.width,
+                        (1 - viewportPosition.y) * Screen.height,
+                        viewportPosition.z);
+
+                    if (GTFOPlugin.showIconsOnlyInsteadOfText.Value)
+                    {
+                        Texture2D icon = extractIcon;
+                        if (icon != null)
+                        {
+                            float iconSize = GTFOPlugin.iconSize.Value * scaleFactor;
+
+                            // Calculate icon position
+                            Rect iconRect = new Rect(screenPosition.x - iconSize / 2, screenPosition.y - iconSize / 2, iconSize, iconSize);
+                            GUI.DrawTexture(iconRect, extractIcon);
+
+                            string label = $"Distance: {extractDistances[i]:F2} meters";
+
+                            // Position the label directly below the icon
+                            float adjustedY = screenPosition.y + iconSize / 2;
+
+                            // Draw label
+                            GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, extractStyle);
+                        }
+                    }
+                    else
+                    {
+                        // Draw text label
+                        string label = $"Extract Name: {extractNames[i]}\nDistance: {extractDistances[i]:F2} meters";
+
+                        float adjustedY = screenPosition.y - labelHeight / 2;
+                        GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, extractStyle);
+                    }
                 }
             }
         }
 
-
+        private static bool IsInViewport(Vector3 viewportPosition)
+        {
+            return viewportPosition.z > 0 && viewportPosition.x >= 0 && viewportPosition.x <= 1 && viewportPosition.y >= 0 && viewportPosition.y <= 1;
+        }
         private static bool IsOnScreen(Vector3 screenPosition)
         {
             return screenPosition.z > 0 &&
@@ -131,64 +188,81 @@ namespace GTFO
                         if (quest == null || GTFOComponent.player == null)
                             continue;
 
-                        //check if quest selection is made in config menu or if default all
-                        if(GTFOPlugin.questSelection.Value != "All" && quest.NameText != GTFOPlugin.questSelection.Value)
+                        // Check if quest selection is made in config menu or if default all
+                        if (GTFOPlugin.questSelection.Value != "All" && quest.NameText != GTFOPlugin.questSelection.Value)
                             continue;
 
                         if (GTFOPlugin.showOnlyNecessaryObjectives.Value && !quest.IsNecessary)
                             continue;
 
-                        //check distance to display quests
-                        if(GTFOPlugin.questDistanceLimit.Value < Vector3.Distance(new Vector3((float)quest.Location.X, (float)quest.Location.Y, (float)quest.Location.Z), GTFOComponent.player.Position))
+                        // Check distance to display quests
+                        if (GTFOPlugin.questDistanceLimit.Value < Vector3.Distance(new Vector3((float)quest.Location.X, (float)quest.Location.Y, (float)quest.Location.Z), GTFOComponent.player.Position))
                             continue;
 
-                        // Safely handle quest.Location and null strings
                         Vector3 questPosition = quest.Location != null ? new Vector3((float)quest.Location.X, (float)quest.Location.Y, (float)quest.Location.Z) : Vector3.zero;
-                        Vector3 screenPosition = Camera.main.WorldToScreenPoint(questPosition);
+                        Vector3 viewportPosition = Camera.main.WorldToViewportPoint(questPosition);
+                        viewportPosition.y += pitchAdjustmentFactor / Screen.height; // Adjust y based on pitch and scale
 
-                        // Adjust y based on pitch
-                        screenPosition.y += pitchAdjustmentFactor;
-
-                        if (IsOnScreen(screenPosition))
+                        if (IsInViewport(viewportPosition))
                         {
                             float scaleFactor = GetSuperSamplingFactor();
-                            float labelWidth = 200 * scaleFactor;
-                            float labelHeight = 100 * scaleFactor;
-                            float adjustedY = Screen.height - screenPosition.y - labelHeight / 2;
+                            float iconSize = GTFOPlugin.iconSize.Value * scaleFactor;
 
-                            // Ensure quest.NameText and quest.Description are not null
-                            string nameText = quest.NameText ?? "Unknown Name";
-                            string description = quest.Description ?? "No description available";
+                            Vector3 screenPosition = new Vector3(
+                                viewportPosition.x * Screen.width,
+                                (1 - viewportPosition.y) * Screen.height,
+                                viewportPosition.z);
 
-                            // Truncate the description at 50 characters
-                            if (description.Length > GTFOPlugin.descriptionMaxCharacterLimit.Value)
+                            if (GTFOPlugin.showIconsOnlyInsteadOfText.Value && questIcon != null)
                             {
-                                description = description.Substring(0, GTFOPlugin.descriptionMaxCharacterLimit.Value);
-                            }
-
-                            // Word wrap the description at 20 characters
-                            if (description.Length > GTFOPlugin.descriptionWordWrapCharacterLimit.Value)
-                            {
-                                int wrapPosition = description.Substring(0, GTFOPlugin.descriptionWordWrapCharacterLimit.Value).LastIndexOf(' ');
-                                if (wrapPosition == -1)
+                                Texture2D icon = questIcon;
+                                if (icon != null)
                                 {
-                                    wrapPosition = GTFOPlugin.descriptionWordWrapCharacterLimit.Value;
+                                    Rect iconRect = new Rect(screenPosition.x - iconSize / 2, screenPosition.y - iconSize / 2, iconSize, iconSize);
+                                    GUI.DrawTexture(iconRect, questIcon);
+
+                                    string label = $"Distance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+                                    float labelHeight = 20 * scaleFactor;
+                                    float labelWidth = 200 * scaleFactor;
+
+                                    // Position the label directly below the icon
+                                    float adjustedY = screenPosition.y + iconSize / 2;
+
+                                    GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, questStyle);
                                 }
-                                description = description.Insert(wrapPosition, "\n");
                             }
+                            else
+                            {
+                                string nameText = quest.NameText ?? "Unknown Name";
+                                string description = quest.Description ?? "No description available";
+                                if (description.Length > GTFOPlugin.descriptionMaxCharacterLimit.Value)
+                                {
+                                    description = description.Substring(0, GTFOPlugin.descriptionMaxCharacterLimit.Value);
+                                }
 
+                                if (description.Length > GTFOPlugin.descriptionWordWrapCharacterLimit.Value)
+                                {
+                                    int wrapPosition = description.Substring(0, GTFOPlugin.descriptionWordWrapCharacterLimit.Value).LastIndexOf(' ');
+                                    wrapPosition = wrapPosition == -1 ? GTFOPlugin.descriptionWordWrapCharacterLimit.Value : wrapPosition;
+                                    description = description.Insert(wrapPosition, "\n");
+                                }
 
+                                string label = $"Quest Name: {nameText}\nDescription: {description}\nDistance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+                                float labelHeight = 100 * scaleFactor;
+                                float labelWidth = 200 * scaleFactor;
 
-                            string label = $"Quest Name: {nameText}\nDescription: {description}\nDistance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
-
-                            GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, questStyle);
+                                float adjustedY = screenPosition.y - labelHeight / 2;
+                                GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, questStyle);
+                            }
                         }
                     }
                 }
             }
-        }
+        
 
-        private static float CalculatePitchAdjustmentFactor(float pitchAngle)
+    }
+
+    private static float CalculatePitchAdjustmentFactor(float pitchAngle)
         {
             // Normalize pitch angle to [0, 360]
             float normalizedPitch = pitchAngle % 360;
@@ -227,5 +301,7 @@ namespace GTFO
                 ExtractManager.extractDistances[i] = Vector3.Distance(ExtractManager.extractPositions[i], GTFOComponent.player.Position);
             }
         }
+
+        
     }
 }

@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.1.2")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.1.4")]
     public class GTFOPlugin : BaseUnityPlugin
     {
         public static GTFOPlugin Instance
@@ -34,6 +34,9 @@ namespace GTFO
 
         internal static ConfigEntry<string> questSelection;
         internal string[] questValues = new string[] { };
+
+        internal static ConfigEntry<bool> showIconsOnlyInsteadOfText;
+        internal static ConfigEntry<int> iconSize;
         public GTFOPlugin()
         {
             Instance = this;
@@ -46,14 +49,28 @@ namespace GTFO
                 "1. Main Settings",
                 "Enable Mod",
                 true,
-                new ConfigDescription("Enable the plugin to show with extracts/quests objectives", null, new ConfigurationManagerAttributes { Order = 5 })
+                new ConfigDescription("Enable the plugin to show with extracts/quests objectives", null, new ConfigurationManagerAttributes { Order = 7 })
             );
 
             displayTime = Config.Bind(
                 "1. Main Settings",
                 "Display Time",
                 10f,
-                new ConfigDescription("Amount of Time to Display Objective Points", new AcceptableValueRange<float>(1f, 60f), new ConfigurationManagerAttributes { Order = 4 })
+                new ConfigDescription("Amount of Time to Display Objective Points", new AcceptableValueRange<float>(1f, 60f), new ConfigurationManagerAttributes { Order = 6 })
+            );
+
+            showIconsOnlyInsteadOfText = Config.Bind(
+                "1. Main Settings",
+                "Show Icons Only Instead of Text",
+                false,
+                new ConfigDescription("Show Icons Only Instead of Text", null, new ConfigurationManagerAttributes { Order = 5 })
+            );
+
+            iconSize = Config.Bind(
+                "1. Main Settings",
+                "Icon Size when displayed",
+                40,
+                new ConfigDescription("How many characters wide the description can display", new AcceptableValueRange<int>(10, 200), new ConfigurationManagerAttributes { Order = 4 })
             );
 
             descriptionMaxCharacterLimit = Config.Bind(
@@ -127,6 +144,8 @@ namespace GTFO
                 new ConfigDescription("Show Quests at a Maximum Distance of Up To", new AcceptableValueRange<float>(100f, 2000f), new ConfigurationManagerAttributes { Order = 1})
             );
 
+            
+
             new NewGamePatch().Enable();
             new TryNotifyConditionChangedPatch().Enable();
             new SpecialPlaceVisitedPatch().Enable();
@@ -135,6 +154,9 @@ namespace GTFO
             TextSize.SettingChanged += OnStyleSettingChanged;
             extractStyleColor.SettingChanged += OnStyleSettingChanged;
             questStyleColor.SettingChanged += OnStyleSettingChanged;
+
+            //load images extractIcon and questIcon and cache it for use
+            GUIHelper.LoadImages();
         }
         private static void OnStyleSettingChanged(object sender, EventArgs e)
         {
