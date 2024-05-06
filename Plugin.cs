@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.1.4")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.1.5")]
     public class GTFOPlugin : BaseUnityPlugin
     {
         public static GTFOPlugin Instance
@@ -96,24 +96,24 @@ namespace GTFO
 
             // Extract Related
             extractKeyboardShortcut = Config.Bind(
-                "2. Extracts",
-                "Extract Keyboard Shortcut",
+                "2. Extracts and Power Switches",
+                "Extract/Switch Keyboard Shortcut",
                 new KeyboardShortcut(KeyCode.O),
-                new ConfigDescription("Toggle Extracts Display", null, new ConfigurationManagerAttributes { Order = 3 })
+                new ConfigDescription("Toggle Extracts/Switches Display", null, new ConfigurationManagerAttributes { Order = 3 })
             );
 
             extractStyleColor = Config.Bind(
-                "2. Extracts",
-                "Extract Style Color",
+                "2. Extracts and Power Switches",
+                "Extract/Switch Style Color",
                 Color.green,
-                new ConfigDescription("Text color for Extracts.", null, new ConfigurationManagerAttributes { Order = 2 })
+                new ConfigDescription("Text color for Extracts/Switches.", null, new ConfigurationManagerAttributes { Order = 2 })
             );
 
             extractDistanceLimit = Config.Bind(
-                "2. Extracts",
-                "Extract Distance Limit",
+                "2. Extracts and Power Switches",
+                "Extract/Switch Distance Limit",
                 1000f,
-                new ConfigDescription("Show Extracts at a Maximum Distance of Up To", new AcceptableValueRange<float>(100f, 2000f), new ConfigurationManagerAttributes { Order = 1 })
+                new ConfigDescription("Show Extracts/Switches at a Maximum Distance of Up To", new AcceptableValueRange<float>(100f, 2000f), new ConfigurationManagerAttributes { Order = 1 })
             );
 
             // Quest Related

@@ -14,8 +14,15 @@ namespace GTFO
         private static GUIStyle questStyle;
         private static Texture2D extractIcon;
         private static Texture2D questIcon;
+        private static Texture2D powerIcon;
+        private static Texture2D waveTexture;
+
         private static bool stylesInitialized = false;
         private static Vector2 lastScreenSize = Vector2.zero;
+
+        private static float pulsationIntensity = 0.5f; 
+        private static float pulsationSpeed = 2f; 
+
 
         internal static void LoadImages()
         {
@@ -23,7 +30,8 @@ namespace GTFO
             string basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             extractIcon = LoadTexture(Path.Combine(basePath, "extractIcon.png"));
             questIcon = LoadTexture(Path.Combine(basePath, "questIcon.png"));
-
+            powerIcon = LoadTexture(Path.Combine(basePath, "powerIcon.png"));
+            waveTexture = LoadTexture(Path.Combine(basePath, "waveTexture.png"));
         }
 
         private static Texture2D LoadTexture(string filePath)
@@ -141,6 +149,93 @@ namespace GTFO
             }
         }
 
+        internal static void DrawPowerSwitches(bool displayActive)
+        {
+            if (!displayActive)
+                return;
+
+            EnsureStyles();
+
+            foreach (Switch @switch in PowerSwitchManager.powerSwitches)
+            {
+                if (@switch == null || GTFOComponent.player == null)
+                    continue;
+
+                Vector3 switchPosition = @switch.transform.position;
+                float switchDistance = Vector3.Distance(switchPosition, GTFOComponent.player.Position);
+
+                //check distance
+                if ( switchDistance > GTFOPlugin.extractDistanceLimit.Value)
+                    continue;
+
+                Vector3 viewportPosition = Camera.main.WorldToViewportPoint(switchPosition);
+                
+                if (IsInViewport(viewportPosition))
+                {
+                    float scaleFactor = GetSuperSamplingFactor();
+                    float labelWidth = 200 * scaleFactor;
+                    float labelHeight = 50 * scaleFactor;
+
+                    // Convert viewport position back to screen coordinates for drawing
+                    Vector3 screenPosition = new Vector3(
+                        viewportPosition.x * Screen.width,
+                        (1 - viewportPosition.y) * Screen.height,
+                        viewportPosition.z);
+
+                    if (GTFOPlugin.showIconsOnlyInsteadOfText.Value)
+                    {
+                        Texture2D icon = powerIcon;
+                        if (icon != null)
+                        {
+                            float iconSize = GTFOPlugin.iconSize.Value * scaleFactor;
+
+                            // Initialize wave size and color properties outside of the condition
+                            float waveSize = iconSize * 1.8f;
+                            Color waveColor = Color.clear;  
+
+                            if (PowerSwitchManager.currentlyTriggered(@switch))
+                            {
+                                iconSize = CalculatePulsationScale(iconSize);
+                                waveSize = CalculatePulsationScale(waveSize * 1.2f);
+
+                                float alpha = 0.5f + 0.5f * Mathf.Sin(Time.time * Mathf.PI);
+                                waveColor = new Color(1, 0, 0, alpha);  // Red 
+                            }
+
+                            // Draw the wave texture
+                            GUI.color = waveColor;
+                            Rect waveRect = new Rect(screenPosition.x - waveSize / 2, screenPosition.y - waveSize / 2, waveSize, waveSize);
+                            GUI.DrawTexture(waveRect, waveTexture);
+
+                            // Draw the icon on top of the wave
+                            GUI.color = Color.white;
+                            Rect iconRect = new Rect(screenPosition.x - iconSize / 2, screenPosition.y - iconSize / 2, iconSize, iconSize);
+                            GUI.DrawTexture(iconRect, powerIcon);
+
+                            // Reset GUI color
+                            GUI.color = Color.white;
+
+                            string label = $"Distance: {switchDistance:F2} meters";
+
+                            // Position the label directly below the icon
+                            float adjustedY = screenPosition.y + iconSize / 2;
+
+                            // Draw label
+                            GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, extractStyle);
+
+                        }
+                    }
+                    else
+                    {
+                        // Draw text label
+                        string label = $"PowerSwitch Name: {@switch.name}\nDistance: {switchDistance:F2} meters\nTriggered: {PowerSwitchManager.currentlyTriggered(@switch)}";
+
+                        float adjustedY = screenPosition.y - labelHeight / 2;
+                        GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, extractStyle);
+                    }
+                }
+            }
+        }
         private static bool IsInViewport(Vector3 viewportPosition)
         {
             return viewportPosition.z > 0 && viewportPosition.x >= 0 && viewportPosition.x <= 1 && viewportPosition.y >= 0 && viewportPosition.y <= 1;
@@ -262,6 +357,7 @@ namespace GTFO
 
     }
 
+
     private static float CalculatePitchAdjustmentFactor(float pitchAngle)
         {
             // Normalize pitch angle to [0, 360]
@@ -301,7 +397,9 @@ namespace GTFO
                 ExtractManager.extractDistances[i] = Vector3.Distance(ExtractManager.extractPositions[i], GTFOComponent.player.Position);
             }
         }
-
-        
+        private static float CalculatePulsationScale(float baseScale)
+        {
+            return baseScale * (1 + pulsationIntensity * Mathf.Sin(Time.time * Mathf.PI * pulsationSpeed));
+        }
     }
 }

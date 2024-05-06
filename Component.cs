@@ -13,7 +13,7 @@ public class GTFOComponent : MonoBehaviour
     internal static ManualLogSource Logger;
     internal static GameWorld gameWorld;
     internal static Player player;
-    internal static bool extractDisplayActive;
+    internal static bool ExtractAndSwitchDisplayActive;
     internal static bool questDisplayActive;
     internal static QuestManager questManager;
 
@@ -27,11 +27,12 @@ public class GTFOComponent : MonoBehaviour
     {
         player = gameWorld.MainPlayer;
         questManager = new QuestManager();
-        extractDisplayActive = false;
+        ExtractAndSwitchDisplayActive = false;
         questDisplayActive = false;
 
         ExtractManager.Initialize();
         questManager.Initialize(ref gameWorld, ref player);
+        PowerSwitchManager.Initialize();
     }
 
     private void Update()
@@ -39,7 +40,7 @@ public class GTFOComponent : MonoBehaviour
         if (!GTFOPlugin.enabledPlugin.Value)
             return;
 
-        if (IsKeyPressed(GTFOPlugin.extractKeyboardShortcut.Value) && !extractDisplayActive)
+        if (IsKeyPressed(GTFOPlugin.extractKeyboardShortcut.Value) && !ExtractAndSwitchDisplayActive)
         {
             ToggleExtractionPointsDisplay(true);
         }
@@ -63,7 +64,7 @@ public class GTFOComponent : MonoBehaviour
 
     private void ToggleExtractionPointsDisplay(bool display)
     {
-        extractDisplayActive = display;
+        ExtractAndSwitchDisplayActive = display;
         if (display)
         {
             StartCoroutine(HideExtractPointsAfterDelay(GTFOPlugin.displayTime.Value));
@@ -89,15 +90,16 @@ public class GTFOComponent : MonoBehaviour
 
     private void HideExtractionPoints()
     {
-        extractDisplayActive = false;
+        ExtractAndSwitchDisplayActive = false;
     }
 
 
     private void OnGUI()
     {
-        if (extractDisplayActive)
+        if (ExtractAndSwitchDisplayActive)
         {
-            GUIHelper.DrawExtracts(extractDisplayActive, ExtractManager.extractPositions, ExtractManager.extractDistances, ExtractManager.extractNames, player);
+            GUIHelper.DrawExtracts(ExtractAndSwitchDisplayActive, ExtractManager.extractPositions, ExtractManager.extractDistances, ExtractManager.extractNames, player);
+            GUIHelper.DrawPowerSwitches(ExtractAndSwitchDisplayActive);
         }
 
         if (questDisplayActive)
@@ -133,7 +135,7 @@ public class GTFOComponent : MonoBehaviour
         }
 
         // Disable any active displays to ensure they don't persist in the UI
-        if (extractDisplayActive)
+        if (ExtractAndSwitchDisplayActive)
         {
             HideExtractionPoints();
         }
@@ -145,6 +147,7 @@ public class GTFOComponent : MonoBehaviour
 
         // Deinitialize any managers or services that were initialized
         ExtractManager.Deinitialize();
+        PowerSwitchManager.Deinitialize();
         if (questManager != null)
         {
             questManager.Deinitialize();
