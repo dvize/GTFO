@@ -451,10 +451,12 @@ namespace GTFO
             // Add available quests to the list
             foreach (var quest in questsListOriginal)
             {
-                if(quest.Template != null)
+                if (quest?.Template != null && quest?.Template?.LocationId != null)
                 {
+                    string locationId = quest.Template.LocationId;
                     if (quest.Status == EQuestStatus.Started &&
-                    mapnameMapping[quest?.Template?.LocationId].ToLower() == Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.LocationId.ToLower())
+                        mapnameMapping.ContainsKey(locationId) &&
+                        mapnameMapping[locationId].ToLower() == Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.LocationId.ToLower())
                     {
 #if DEBUG
                         GTFOComponent.Logger.LogWarning("DrawQuestDropdown Quest: " + quest.Template.Name + " Status: " + quest.Status);
