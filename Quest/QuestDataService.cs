@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using EFT;
 using EFT.Interactive;
 using EFT.Quests;
 using HarmonyLib;
+using UnityEngine;
 using static EFT.Quests.ConditionCounterCreator;
+using QuestClass = GClass1249;
 
 namespace GTFO
 {
@@ -23,6 +26,13 @@ namespace GTFO
             _gameWorld = gameWorld ?? throw new ArgumentNullException(nameof(gameWorld));
             _player = player ?? throw new ArgumentNullException(nameof(player));
         }
+
+        private static FieldInfo _playerQuestControllerField = AccessTools.Field(typeof(Player), "_questController");
+        private static PropertyInfo _questControllerQuestsProperty = AccessTools.Property(typeof(AbstractQuestControllerClass), "Quests");
+        private static MethodInfo _questsGetConditionalMethod = AccessTools.Method(_questControllerQuestsProperty.PropertyType, "GetConditional", new Type[] { typeof(string) });
+        private static Type _questType = _questControllerQuestsProperty.PropertyType.BaseType.GetGenericArguments()[0];
+        private static PropertyInfo _questNecessaryConditions = AccessTools.Property(_questType, "NecessaryConditions");
+        private static MethodInfo _questIsConditionDone = AccessTools.Method(_questType, "IsConditionDone");
 
         internal void InitialQuestData(TriggerWithId[] allTriggers)
         {
@@ -149,17 +159,59 @@ namespace GTFO
 #endif
 
                 //check if condition has already been completed
-                if (quest.CompletedConditions.Contains(condition.id))
-                {
-#if DEBUG
-                    GTFOComponent.Logger.LogWarning($"Condition {condition.id.Localized()} has already been completed.");
+                if (IsConditionCompleted(_player, quest, condition))
                     continue;
-#endif
-                }
+
                 ProcessCondition(quest, condition, allTriggers, questItems, nameKey, traderId, questMarkerData);
             }
         }
 
+        private static bool IsConditionCompleted(Player player, QuestDataClass questData, Condition condition)
+        {
+            if (!questData.CompletedConditions.Contains(condition.id))
+            {
+                return false;
+            }
+
+            var questController = _playerQuestControllerField.GetValue(player);
+            if (questController == null)
+            {
+                return false;
+            }
+
+            var quests = _questControllerQuestsProperty.GetValue(questController);
+            if (quests == null)
+            {
+                return false;
+            }
+
+            var quest = _questsGetConditionalMethod.Invoke(quests, new object[] { questData.Id });
+            if (quest == null)
+            {
+                return false;
+            }
+
+            var necessaryConditions = _questNecessaryConditions.GetValue(quest) as IEnumerable<Condition>;
+            if (necessaryConditions == null)
+            {
+                return false;
+            }
+
+            var matchingCondition = necessaryConditions.FirstOrDefault(c => c.id == condition.id);
+            if (matchingCondition == null)
+            {
+                return false;
+            }
+
+            var isComplete = (bool)_questIsConditionDone.Invoke(quest, new object[] { matchingCondition });
+            if (!isComplete)
+            {
+#if DEBUG
+                GTFOComponent.Logger.LogWarning($"False positive on condition completion found: {condition.id.Localized()}");
+#endif
+            }
+            return isComplete;
+        }
 
         private void ProcessCondition(QuestDataClass quest, Condition condition, TriggerWithId[] allTriggers, (string Id, LootItem Item)[] questItems, string nameKey, string traderId, List<QuestData> questMarkerData)
         {

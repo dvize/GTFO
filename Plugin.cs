@@ -19,6 +19,8 @@ namespace GTFO
         }
 
         internal static ConfigEntry<bool> enabledPlugin;
+        internal static ConfigEntry<bool> showPrefixes;
+        internal static ConfigEntry<bool> showPowerSwitches;
         internal static ConfigEntry<float> extractDistanceLimit;
         internal static ConfigEntry<float> questDistanceLimit;
         internal static ConfigEntry<KeyboardShortcut> extractKeyboardShortcut;
@@ -49,7 +51,21 @@ namespace GTFO
                 "1. Main Settings",
                 "Enable Mod",
                 true,
-                new ConfigDescription("Enable the plugin to show with extracts/quests objectives", null, new ConfigurationManagerAttributes { Order = 7 })
+                new ConfigDescription("Enable the plugin to show with extracts/quests objectives", null, new ConfigurationManagerAttributes { Order = 9 })
+            );
+
+            showPrefixes = Config.Bind(
+                "1. Main Settings",
+                "Show Prefixes",
+                true,
+                new ConfigDescription("Show 'Quest Name:', 'Extract Name:'", null, new ConfigurationManagerAttributes { Order = 8 })
+            );
+
+            showPowerSwitches = Config.Bind(
+                "1. Main Settings",
+                "Show Power Switches",
+                true,
+                new ConfigDescription("Show Power Switches", null, new ConfigurationManagerAttributes { Order = 7 })
             );
 
             displayTime = Config.Bind(
