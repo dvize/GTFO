@@ -129,6 +129,11 @@ namespace GTFO
                             GUI.DrawTexture(iconRect, extractIcon);
 
                             string label = $"Distance: {extractDistances[i]:F2} meters";
+                            if (!GTFOPlugin.showPrefixes.Value)
+                            {
+                                label = $"{extractDistances[i]:F2} meters";
+                            }
+
 
                             // Position the label directly below the icon
                             float adjustedY = screenPosition.y + iconSize / 2;
@@ -141,6 +146,10 @@ namespace GTFO
                     {
                         // Draw text label
                         string label = $"Extract Name: {extractNames[i]}\nDistance: {extractDistances[i]:F2} meters";
+                        if (!GTFOPlugin.showPrefixes.Value)
+                        {
+                            label = $"{extractNames[i]}\n{extractDistances[i]:F2} meters";
+                        }
 
                         float adjustedY = screenPosition.y - labelHeight / 2;
                         GUI.Label(new Rect(screenPosition.x - labelWidth / 2, adjustedY, labelWidth, labelHeight), label, extractStyle);
@@ -317,6 +326,11 @@ namespace GTFO
                                     GUI.DrawTexture(iconRect, questIcon);
 
                                     string label = $"Distance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+                                    if (!GTFOPlugin.showPrefixes.Value)
+                                    {
+                                        label = $"{Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+                                    }
+
                                     float labelHeight = 20 * scaleFactor;
                                     float labelWidth = 200 * scaleFactor;
 
@@ -343,6 +357,11 @@ namespace GTFO
                                 }
 
                                 string label = $"Quest Name: {nameText}\nDescription: {description}\nDistance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+                                if (!GTFOPlugin.showPrefixes.Value)
+                                {
+                                    label = $"{nameText}\n----\n{description}\n----\n{Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+                                }
+
                                 float labelHeight = 100 * scaleFactor;
                                 float labelWidth = 200 * scaleFactor;
 

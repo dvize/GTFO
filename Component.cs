@@ -99,7 +99,9 @@ public class GTFOComponent : MonoBehaviour
         if (ExtractAndSwitchDisplayActive)
         {
             GUIHelper.DrawExtracts(ExtractAndSwitchDisplayActive, ExtractManager.extractPositions, ExtractManager.extractDistances, ExtractManager.extractNames, player);
-            GUIHelper.DrawPowerSwitches(ExtractAndSwitchDisplayActive);
+            
+            if (GTFOPlugin.showPowerSwitches.Value)
+                GUIHelper.DrawPowerSwitches(ExtractAndSwitchDisplayActive);
         }
 
         if (questDisplayActive)
