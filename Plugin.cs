@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.1.5")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.1.6")]
     public class GTFOPlugin : BaseUnityPlugin
     {
         public static GTFOPlugin Instance
@@ -45,34 +45,26 @@ namespace GTFO
         }
         private void Awake()
         {
-
             // Main
             enabledPlugin = Config.Bind(
                 "1. Main Settings",
                 "Enable Mod",
                 true,
-                new ConfigDescription("Enable the plugin to show with extracts/quests objectives", null, new ConfigurationManagerAttributes { Order = 9 })
-            );
-
-            showPrefixes = Config.Bind(
-                "1. Main Settings",
-                "Show Prefixes",
-                true,
-                new ConfigDescription("Show 'Quest Name:', 'Extract Name:'", null, new ConfigurationManagerAttributes { Order = 8 })
-            );
-
-            showPowerSwitches = Config.Bind(
-                "1. Main Settings",
-                "Show Power Switches",
-                true,
-                new ConfigDescription("Show Power Switches", null, new ConfigurationManagerAttributes { Order = 7 })
+                new ConfigDescription("Enable the plugin to show with extracts/quests objectives", null, new ConfigurationManagerAttributes { Order = 8 })
             );
 
             displayTime = Config.Bind(
                 "1. Main Settings",
                 "Display Time",
                 10f,
-                new ConfigDescription("Amount of Time to Display Objective Points", new AcceptableValueRange<float>(1f, 60f), new ConfigurationManagerAttributes { Order = 6 })
+                new ConfigDescription("Amount of Time to Display Objective Points", new AcceptableValueRange<float>(1f, 60f), new ConfigurationManagerAttributes { Order = 7 })
+            );
+
+            showPrefixes = Config.Bind(
+                "1. Main Settings",
+                "Show Prefixes",
+                true,
+                new ConfigDescription("Show 'Quest Name:', 'Extract Name:'", null, new ConfigurationManagerAttributes { Order = 6 })
             );
 
             showIconsOnlyInsteadOfText = Config.Bind(
@@ -110,7 +102,15 @@ namespace GTFO
                 new ConfigDescription("Size of the text for display.", new AcceptableValueRange<int>(10, 24), new ConfigurationManagerAttributes { Order = 1 })
             );
 
-            // Extract Related
+            // Extract and Power Switches Related
+
+            showPowerSwitches = Config.Bind(
+                "2. Extracts and Power Switches",
+                "Show Power Switches",
+                true,
+                new ConfigDescription("Show Power Switches", null, new ConfigurationManagerAttributes { Order = 4 })
+            );
+
             extractKeyboardShortcut = Config.Bind(
                 "2. Extracts and Power Switches",
                 "Extract/Switch Keyboard Shortcut",
