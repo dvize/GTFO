@@ -356,10 +356,14 @@ namespace GTFO
                                     description = description.Insert(wrapPosition, "\n");
                                 }
 
-                                string label = $"Quest Name: {nameText}\nDescription: {description}\nDistance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+                                string label;
                                 if (!GTFOPlugin.showPrefixes.Value)
                                 {
                                     label = $"{nameText}\n----\n{description}\n----\n{Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
+                                }
+                                else
+                                {
+                                    label = $"Quest Name: {nameText}\nDescription: {description}\nDistance: {Vector3.Distance(questPosition, GTFOComponent.player.Position):F2} meters";
                                 }
 
                                 float labelHeight = 100 * scaleFactor;
