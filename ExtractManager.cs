@@ -38,7 +38,7 @@ namespace GTFO
         private static void SetupInitialExtracts()
         {
             //check if we are in a scav run
-            if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            if (SPT.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
                 foreach (ScavExfiltrationPoint scavExfiltrationPoint in GTFOComponent.gameWorld.ExfiltrationController.ScavExfiltrationPoints)
                 {
@@ -61,14 +61,14 @@ namespace GTFO
                 }
             }
 
-            GTFOComponent.Logger.LogWarning(Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid ?
+            GTFOComponent.Logger.LogWarning(SPT.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid ?
                 $"Enabled Scav Exfiltration Points: {enabledScavExfiltrationPoints.Count}" :
                 $"Enabled Exfiltration Points: {enabledExfiltrationPoints.Count}");
         }
 
         private static void SetupExtractArrays()
         {
-            if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            if (SPT.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
                 extractDistances = new float[enabledScavExfiltrationPoints.Count];
                 extractPositions = new Vector3[enabledScavExfiltrationPoints.Count];

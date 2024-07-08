@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Aki.Reflection.Patching;
+using SPT.Reflection.Patching;
 using BepInEx;
 using BepInEx.Configuration;
 using dvize.GTFO.Quest;
@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace GTFO
 {
-    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.1.6")]
+    [BepInPlugin("com.dvize.GTFO", "dvize.GTFO", "1.2.0")]
     public class GTFOPlugin : BaseUnityPlugin
     {
         public static GTFOPlugin Instance

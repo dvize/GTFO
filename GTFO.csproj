@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>dvize.GTFO</RootNamespace>
     <AssemblyName>dvize.GTFO</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -56,19 +56,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>F:\SPT-AKI-DEV\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="aki-singleplayer">
-      <HintPath>F:\SPT-AKI-DEV\BepInEx\plugins\spt\aki-singleplayer.dll</HintPath>
-    </Reference>
-    <Reference Include="Aki.Common">
-      <HintPath>F:\SPT-AKI-DEV\EscapeFromTarkov_Data\Managed\Aki.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="Aki.Reflection, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>F:\SPT-AKI-DEV\EscapeFromTarkov_Data\Managed\Aki.Reflection.dll</HintPath>
-    </Reference>
-    <Reference Include="aki_PrePatch">
-      <HintPath>F:\SPT-AKI-DEV\BepInEx\patchers\aki_PrePatch.dll</HintPath>
-    </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>F:\SPT-AKI-DEV\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll</HintPath>
@@ -86,6 +73,18 @@
       <HintPath>F:\SPT-AKI-DEV\EscapeFromTarkov_Data\Managed\DissonanceVoip.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="spt-common">
+      <HintPath>F:\SPT-AKI-DEV\BepInEx\plugins\spt\spt-common.dll</HintPath>
+    </Reference>
+    <Reference Include="spt-prepatch">
+      <HintPath>F:\SPT-AKI-DEV\BepInEx\patchers\spt-prepatch.dll</HintPath>
+    </Reference>
+    <Reference Include="spt-reflection">
+      <HintPath>F:\SPT-AKI-DEV\BepInEx\plugins\spt\spt-reflection.dll</HintPath>
+    </Reference>
+    <Reference Include="spt-singleplayer">
+      <HintPath>F:\SPT-AKI-DEV\BepInEx\plugins\spt\spt-singleplayer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -139,11 +138,20 @@
   <PropertyGroup>
     <PostBuildEvent>copy "$(TargetPath)" "F:\SPT-AKI-DEV\BepInEx\plugins\dvize.GTFO\$(TargetName).dll"
 
-if $(ConfigurationName) == Debug (
+if "$(ConfigurationName)" == "Debug" (
     copy "$(TargetDir)$(TargetName).pdb" "F:\SPT-AKI-DEV\BepInEx\plugins\dvize.GTFO\$(TargetName).pdb"
 ) else (
     del "F:\SPT-AKI-DEV\BepInEx\plugins\dvize.GTFO\$(TargetName).pdb"
 )
-</PostBuildEvent>
+
+if "$(ConfigurationName)" == "Release" (
+    powershell -ExecutionPolicy Bypass -NoProfile -NonInteractive -File "$(ProjectDir)PackageMods.ps1" -ConfigurationName "$(ConfigurationName)" -TargetPath "F:\SPT-AKI-DEV\BepInEx\plugins\dvize.GTFO\$(TargetName).dll" -TargetName "$(TargetName)" -TargetDir "F:\SPT-AKI-DEV\BepInEx\plugins\dvize.GTFO"
+)</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>FOR /F %25%25x IN ('tasklist /NH /FI "IMAGENAME eq EscapeFromTarkov.exe"') DO IF %25%25x == EscapeFromTarkov.exe (
+taskkill /F /IM EscapeFromTarkov.exe
+ping -n  2 127.0.0.1 &gt;NUL
+)</PreBuildEvent>
   </PropertyGroup>
 </Project>

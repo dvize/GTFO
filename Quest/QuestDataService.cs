@@ -8,7 +8,6 @@ using EFT.Quests;
 using HarmonyLib;
 using UnityEngine;
 using static EFT.Quests.ConditionCounterCreator;
-using QuestClass = GClass1249;
 
 namespace GTFO
 {
@@ -36,7 +35,6 @@ namespace GTFO
 
         internal void InitialQuestData(TriggerWithId[] allTriggers)
         {
-
             var questObjectiveData = new List<QuestData>();
             var questsList = GetQuestsList();
             var lootItems = GetLootItems();
@@ -60,7 +58,7 @@ namespace GTFO
             QuestObjectives = questObjectiveData;
         }
 
-        internal void UpdateQuestCompletedConditions(GClass1249 bsgQuest)
+        internal void UpdateQuestCompletedConditions(QuestClass bsgQuest)
         {
 #if DEBUG
             GTFOComponent.Logger.LogWarning($"Updating Completed Quest Data from BSG Quest: {bsgQuest.Id.LocalizedName()} of type {bsgQuest.QuestTypeName} \r ID: {bsgQuest.Id}");
@@ -103,7 +101,7 @@ namespace GTFO
         internal List<QuestDataClass> GetQuestsList()
         {
             var absQuestController = Traverse.Create(_player).Field("_questController").GetValue<AbstractQuestControllerClass>();
-            var quests = Traverse.Create(absQuestController).Property("Quests").GetValue<GClass3362>();
+            var quests = Traverse.Create(absQuestController).Property("Quests").GetValue<GClass3386>();
             var questsList = Traverse.Create(quests).Field("list_1").GetValue<List<QuestDataClass>>();
 
             return questsList;
@@ -120,7 +118,21 @@ namespace GTFO
         {
             if (quest == null || quest.Template == null || quest.Template.Conditions == null)
             {
-                GTFOComponent.Logger.LogError("Invalid quest data");
+#if DEBUG
+                if (quest == null)
+                {
+                    GTFOComponent.Logger.LogError("Quest is null");
+                }
+                else if (quest.Template == null)
+                {
+                    GTFOComponent.Logger.LogError("Quest Template is null for QuestID: " + quest.Id);
+                }
+                else if (quest.Template.Conditions == null)
+                {
+                    GTFOComponent.Logger.LogError("Quest Template Conditions are null for QuestID: " + quest.Id);
+                }
+#endif
+                
                 return;
             }
 
@@ -249,7 +261,7 @@ namespace GTFO
         private void ProcessConditionCounter(ConditionCounterCreator counterCreator, string nameKey, string traderId, TriggerWithId[] allTriggers, List<QuestData> questMarkerData, QuestDataClass quest)
         {
             var counter = Traverse.Create(counterCreator).Field("_templateConditions").GetValue<ConditionCounterTemplate>();
-            var conditions = Traverse.Create(counter).Field("Conditions").GetValue<GClass3368>();
+            var conditions = Traverse.Create(counter).Field("Conditions").GetValue<GClass3392>();
             var conditionsList = Traverse.Create(conditions).Field("list_0").GetValue<IList<Condition>>();
 
             foreach (var counterCondition in conditionsList)
@@ -508,7 +520,7 @@ namespace GTFO
                     string locationId = quest.Template.LocationId;
                     if (quest.Status == EQuestStatus.Started &&
                         mapnameMapping.ContainsKey(locationId) &&
-                        mapnameMapping[locationId].ToLower() == Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.LocationId.ToLower())
+                        mapnameMapping[locationId].ToLower() == SPT.SinglePlayer.Utils.InRaid.RaidChangesUtil.LocationId.ToLower())
                     {
 #if DEBUG
                         GTFOComponent.Logger.LogWarning("DrawQuestDropdown Quest: " + quest.Template.Name + " Status: " + quest.Status);

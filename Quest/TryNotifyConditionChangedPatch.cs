@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Aki.Reflection.Patching;
+using SPT.Reflection.Patching;
 using Comfort.Common;
 using EFT;
 using HarmonyLib;
@@ -12,11 +12,11 @@ namespace GTFO
         protected override MethodBase GetTargetMethod()
         {
 
-            return AccessTools.Method(typeof(GClass3205), nameof(GClass3205.TryNotifyConditionChanged));
+            return AccessTools.Method(typeof(GClass3228), nameof(GClass3228.TryNotifyConditionChanged));
         }
 
         [PatchPostfix]
-        public static void Postfix(ref GClass1249 quest)
+        public static void Postfix(ref QuestClass quest)
         {
             if (Singleton<GameWorld>.Instance == null)
             {

@@ -25,7 +25,7 @@ namespace GTFO
         }
         internal void SetupInitialQuests()
         {
-            if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            if (!SPT.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
                 GTFOComponent.Logger.LogInfo("Calling Reload Quest Data from SetupInitial Quests");
                 questDataService.InitialQuestData(ZoneDataHelper.GetAllTriggers());
@@ -36,9 +36,9 @@ namespace GTFO
             }
         }
 
-        internal void OnQuestsChanged(GClass1249 bsgQuest)
+        internal void OnQuestsChanged(QuestClass bsgQuest)
         {
-            if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            if (!SPT.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
 #if DEBUG
                 GTFOComponent.Logger.LogInfo("Calling Update Quest Completed Conditions from OnQuestsChanged");
@@ -49,7 +49,7 @@ namespace GTFO
 
         internal void OnConditionalQuestsChanged(string id)
         {
-            if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            if (!SPT.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
 #if DEBUG
                 GTFOComponent.Logger.LogInfo("Calling Update Quest Completed Conditionals from OnQuestsChanged");
