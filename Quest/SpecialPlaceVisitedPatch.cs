@@ -16,13 +16,16 @@ namespace dvize.GTFO.Quest
         }
 
         [PatchPostfix]
-        public static void Postfix(ref string id, ref int experience)
+        public static void Postfix(Player __instance, ref string id, ref int experience)
         {
             if (Singleton<GameWorld>.Instance == null)
             {
                 Debug.LogError("SpecialPlaceVisited Postfix: GameWorld instance is null.");
                 return;
             }
+
+            if (!__instance.IsYourPlayer)
+                return;
 
             if (Singleton<GameWorld>.Instance.TryGetComponent<GTFOComponent>(out GTFOComponent gtfo))
             {
